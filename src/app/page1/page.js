@@ -92,7 +92,7 @@ export default function Home() {
         >
           <h2 className="font-bold">Details of Sphere/Box</h2>
           <p>{boxText}</p>
-          <p>And every time you hover the color of 100 sphere changes.</p>
+          <p>And every time you hover the color of {sphereCount} sphere changes.</p>
         </div>
       )}
       <div
