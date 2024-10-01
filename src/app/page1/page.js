@@ -74,16 +74,26 @@ export default function Home() {
     const MaxYCord = 30;
     const MaxZCord = 90;
     const newBoxCoords = [];
-    for (let index = 0; index < sphereCount; index++) {
-      const x1 = Math.floor(Math.random() * MaxXCord) - 15;
-      const y1 = Math.floor(Math.random() * MaxYCord) - 15;
-      const z1 = Math.floor(Math.random() * MaxZCord) - 45;
-      newBoxCoords.push([x1, y1, z1]);
-    }
-    setBoxCoords(newBoxCoords);
+    let spher1 = 0;
+    const intId = setInterval(() => {
+      if (spher1 === sphereCount) {
+        clearInterval(intId);
+        return;
+      } else {
+        const x1 = Math.floor(Math.random() * MaxXCord) - 15;
+        const y1 = Math.floor(Math.random() * MaxYCord) - 15;
+        const z1 = Math.floor(Math.random() * MaxZCord) - 45;
+        const newBox1 = [...newBoxCoords, [x1, y1, z1]];
+        newBoxCoords.push([x1, y1, z1]);
+        setBoxCoords(newBox1);
+        spher1 += 1;
+      }
+    }, 50);
+    return () => clearInterval(intId);
   }, [sphereCount]);
   return (
-    <main className="h-screen m-[unset]">
+    <main className="h-screen m-[unset] bg-slate-200">
+      {/* <p>{boxCoords}</p> */}
       {boxText !== null && (
         <div
           style={{ backgroundColor: getRandomColor() }}
@@ -92,7 +102,9 @@ export default function Home() {
         >
           <h2 className="font-bold">Details of Sphere/Box</h2>
           <p>{boxText}</p>
-          <p>And every time you hover the color of {sphereCount} sphere changes.</p>
+          <p>
+            And every time you hover the color of {sphereCount} sphere changes.
+          </p>
         </div>
       )}
       <div
