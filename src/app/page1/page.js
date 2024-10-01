@@ -66,9 +66,9 @@ function getRandomColor() {
 }
 
 export default function Home() {
-  const [boxCoords, setBoxCoords] = useState([]);
+  const [boxCoords, setBoxCoords] = useState([{}]);
   const [boxText, setBoxText] = useState(null);
-  const [sphereCount, setSphereCount] = useState(100);
+  const [sphereCount, setSphereCount] = useState(30);
   useEffect(() => {
     const MaxXCord = 30;
     const MaxYCord = 30;
@@ -76,16 +76,22 @@ export default function Home() {
     const newBoxCoords = [];
     let spher1 = 0;
     const intId = setInterval(() => {
+      // console.log(sphereCount, spher1, intId);
       if (spher1 === sphereCount) {
+        // console.log("in 1");
         clearInterval(intId);
         return;
       } else {
+        // console.log("in 2");
         const x1 = Math.floor(Math.random() * MaxXCord) - 15;
         const y1 = Math.floor(Math.random() * MaxYCord) - 15;
         const z1 = Math.floor(Math.random() * MaxZCord) - 45;
-        const newBox1 = [...newBoxCoords, [x1, y1, z1]];
-        newBoxCoords.push([x1, y1, z1]);
-        setBoxCoords(newBox1);
+        newBoxCoords.push({
+          position: [x1, y1, z1],
+          color1: getRandomColor(),
+          color2: getRandomColor(),
+        });
+        setBoxCoords([...newBoxCoords]);
         spher1 += 1;
       }
     }, 50);
@@ -102,9 +108,6 @@ export default function Home() {
         >
           <h2 className="font-bold">Details of Sphere/Box</h2>
           <p>{boxText}</p>
-          <p>
-            And every time you hover the color of {sphereCount} sphere changes.
-          </p>
         </div>
       )}
       <div
@@ -115,7 +118,7 @@ export default function Home() {
         <input
           className="w-full border-0 bg-red-400 rounded-md pl-3 py-2 outline-none text-white"
           type="text"
-          onChange={(e) => setSphereCount(e.target.value)}
+          onChange={(e) => setSphereCount(parseInt(e.target.value))}
           value={sphereCount}
         />
       </div>
@@ -133,9 +136,9 @@ export default function Home() {
         {boxCoords.map((ele, index) => (
           <Box
             key={index}
-            position={ele}
-            color2={getRandomColor()}
-            color1={getRandomColor()}
+            position={ele.position}
+            color2={ele.color2}
+            color1={ele.color1}
             setBoxText={setBoxText}
           />
         ))}
