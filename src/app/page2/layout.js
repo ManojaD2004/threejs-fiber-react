@@ -4,7 +4,7 @@ import "@/app/globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "ThreeJS Fiber React Page1",
+  title: "ThreeJS Fiber React Page2",
   description: "ThreeJS Fiber React Learning and Testing",
 };
 
