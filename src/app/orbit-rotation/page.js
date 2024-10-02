@@ -23,7 +23,7 @@ function BigSphereObj({ position, color1, color2 }) {
         setHover(false);
       }}
     >
-      <sphereGeometry args={[9, 64, 64]} />
+      <sphereGeometry args={[20, 64, 64]} />
       <meshStandardMaterial color={hovered ? color1 : color2} />
     </mesh>
   );
@@ -114,7 +114,7 @@ function Asteriod1({ position }) {
       onPointerOut={(event) => {
         setHover(false);
       }}
-      scale={hovered ? 3 : 2}
+      scale={hovered ? 2 : 1}
     >
       <primitive object={clone} scale={1} rotation-z={0} position={[0, 0, 0]} />
     </mesh>
@@ -135,29 +135,44 @@ function AsteriodOrbitComponent({ xRadius, yRadius, colorOrbit, speedPla }) {
     0
   );
   const eliRef = useRef();
-  const ASTERIODS_SIZE = 100;
-  const boxesRef = [];
-  for (let i = 0; i < ASTERIODS_SIZE; i++) {
-    boxesRef.push(useRef());
-  }
+  const ASTERIODS_SIZE = 500;
+  const maxXYZ = 15;
+  const boxesRef = useMemo(
+    () => Array.from({ length: ASTERIODS_SIZE }, () => useRef()),
+    [ASTERIODS_SIZE]
+  );
+  const boxesMeta = useMemo(() => {
+    const maxXYZ = 15;
+    return Array.from({ length: ASTERIODS_SIZE }, () => ({
+      x: Math.random() * maxXYZ * 2 - maxXYZ / 2,
+      y: Math.random() * maxXYZ * 2 - maxXYZ / 2,
+      z: Math.random() * maxXYZ * 2 - maxXYZ / 2,
+    }));
+  }, [ASTERIODS_SIZE]);
 
   const points = ellipseCurve.getPoints(100);
   useFrame((state, delta) => {
     const time = window.performance.now() * 0.0003 * speedPla;
     for (let i = 0; i < ASTERIODS_SIZE; i++) {
-      const newP = ellipseCurve.getPoint(time + i * 0.01);
+      const newP = ellipseCurve.getPoint(time + i * 0.02);
       boxesRef[i].current.position.x = newP.x;
       boxesRef[i].current.position.y = newP.y;
-      boxesRef[i].current.rotation.x += delta;
-      boxesRef[i].current.rotation.y += delta * Math.random() * 4;
-      boxesRef[i].current.rotation.z += delta * Math.random() * 4;
+      boxesRef[i].current.rotation.x += delta * Math.random() * 0.5;
+      boxesRef[i].current.rotation.y += delta * Math.random() * 1;
+      boxesRef[i].current.rotation.z += delta * Math.random() * 0.7;
     }
   });
   return (
     <mesh ref={eliRef} rotation={[Math.PI / 2, 0, 0]}>
       {boxesRef.map((ele, index) => (
         <mesh key={index} ref={ele} position={[0, 0, 0]}>
-          <Asteriod1 position={[5, 0, 0]} />
+          <Asteriod1
+            position={[
+              boxesMeta[index].x,
+              boxesMeta[index].y,
+              boxesMeta[index].z,
+            ]}
+          />
         </mesh>
       ))}
       <Line points={points} color={colorOrbit} lineWidth={3} />
@@ -223,6 +238,15 @@ export default function Home() {
           speedPla={0.03}
           xRadius={300}
           yRadius={290}
+        />
+        <OrbitComponent
+          xRadius={450}
+          yRadius={435}
+          colorOrbit={"orange"}
+          colorPla1={"yellow"}
+          colorPla2={"red"}
+          speedPla={0.2}
+          sizePla={6}
         />
         <BigSphereObj
           position={[0, 0, 0]}
