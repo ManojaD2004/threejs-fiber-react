@@ -138,9 +138,9 @@ function AsteriodOrbitComponent({ xRadius, yRadius, colorOrbit, speedPla }) {
   const ASTERIODS_SIZE = 500;
   const maxXYZ = 15;
   const boxesRef = useMemo(
-    () => Array.from({ length: ASTERIODS_SIZE }, () => useRef()),
+    () => Array.from({ length: ASTERIODS_SIZE }, () => React.createRef()),
     [ASTERIODS_SIZE]
-  );
+  ); // Create refs outside of the loop
   const boxesMeta = useMemo(() => {
     const maxXYZ = 15;
     return Array.from({ length: ASTERIODS_SIZE }, () => ({
