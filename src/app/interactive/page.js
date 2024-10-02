@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import getRandomColor from "../helpers/getRandomColor";
 
 function Box({ position, color1, color2, setBoxText }) {
   const meshRef = useRef();
@@ -56,47 +57,70 @@ function Box({ position, color1, color2, setBoxText }) {
   );
 }
 
-function getRandomColor() {
-  var letters = "0123456789ABCDEF";
-  var color = "#";
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
-
 export default function Home() {
-  const [boxCoords, setBoxCoords] = useState([{}]);
+  const [boxCoords, setBoxCoords] = useState([]);
   const [boxText, setBoxText] = useState(null);
   const [sphereCount, setSphereCount] = useState(30);
+  const [prevSphereCount, setPrevSphereCount] = useState(0);
+  const [execEffect, setExecEffect] = useState(true);
   useEffect(() => {
-    const MaxXCord = 30;
-    const MaxYCord = 30;
-    const MaxZCord = 90;
-    const newBoxCoords = [];
-    let spher1 = 0;
-    const intId = setInterval(() => {
-      // console.log(sphereCount, spher1, intId);
-      if (spher1 === sphereCount) {
-        // console.log("in 1");
-        clearInterval(intId);
+    // console.log(execEffect, prevSphereCount, sphereCount, boxCoords);
+    if (execEffect === true) {
+      const MaxXCord = 30;
+      const MaxYCord = 30;
+      const MaxZCord = 90;
+      const newBoxCoords = [...boxCoords];
+      let spher1 = prevSphereCount;
+      if (sphereCount === prevSphereCount) {
+        setExecEffect(false);
         return;
+      } else if (sphereCount > prevSphereCount) {
+        // console.log("in");
+        const intId = setInterval(() => {
+          // console.log("in 2");
+          if (spher1 === sphereCount) {
+            clearInterval(intId);
+            setExecEffect(false);
+            setPrevSphereCount(sphereCount);
+            return;
+          } else {
+            const x1 = Math.floor(Math.random() * MaxXCord) - 15;
+            const y1 = Math.floor(Math.random() * MaxYCord) - 15;
+            const z1 = Math.floor(Math.random() * MaxZCord) - 45;
+            newBoxCoords.push({
+              position: [x1, y1, z1],
+              color1: getRandomColor(),
+              color2: getRandomColor(),
+            });
+            setBoxCoords([...newBoxCoords]);
+            spher1 += 1;
+          }
+        }, 50);
+
+        return () => {
+          clearInterval(intId);
+          setPrevSphereCount(sphereCount);
+        };
       } else {
-        // console.log("in 2");
-        const x1 = Math.floor(Math.random() * MaxXCord) - 15;
-        const y1 = Math.floor(Math.random() * MaxYCord) - 15;
-        const z1 = Math.floor(Math.random() * MaxZCord) - 45;
-        newBoxCoords.push({
-          position: [x1, y1, z1],
-          color1: getRandomColor(),
-          color2: getRandomColor(),
-        });
-        setBoxCoords([...newBoxCoords]);
-        spher1 += 1;
+        const intId = setInterval(() => {
+          if (spher1 === sphereCount) {
+            clearInterval(intId);
+            setExecEffect(false);
+            setPrevSphereCount(sphereCount);
+            return;
+          } else {
+            newBoxCoords.pop();
+            setBoxCoords([...newBoxCoords]);
+            spher1 -= 1;
+          }
+        }, 50);
+        return () => {
+          clearInterval(intId);
+          setPrevSphereCount(sphereCount);
+        };
       }
-    }, 50);
-    return () => clearInterval(intId);
-  }, [sphereCount]);
+    }
+  }, [execEffect]);
   return (
     <main className="h-screen m-[unset] bg-slate-200">
       {/* <p>{boxCoords}</p> */}
@@ -112,15 +136,30 @@ export default function Home() {
       )}
       <div
         className="fixed bg-red-500 w-48 shadow-xl text-white
-      z-50 flex flex-col space-y-10 px-4 py-7 bottom-0 right-0 m-4"
+      z-50 flex flex-col space-y-5 px-4 py-3 bottom-0 right-0 m-4"
       >
         <h2 className="font-bold">Change Sphere Count</h2>
         <input
           className="w-full border-0 bg-red-400 rounded-md pl-3 py-2 outline-none text-white"
           type="text"
-          onChange={(e) => setSphereCount(parseInt(e.target.value))}
+          onChange={(e) => {
+            const value1 = parseInt(e.target.value === "" ? 0 : e.target.value);
+            setSphereCount(value1);
+          }}
           value={sphereCount}
         />
+        <button
+          onClick={() => {
+            if (execEffect === false) {
+              setExecEffect(true);
+            } else {
+              console.log("Hello wait for the completion!");
+            }
+          }}
+          className="bg-red-700 hover:bg-red-800 text-white w-full h-9 rounded-lg  border-0"
+        >
+          Change
+        </button>
       </div>
       <Canvas camera={{ position: [60, 30, 30], fov: 75, far: 5000, near: 1 }}>
         <OrbitControls />

@@ -2,146 +2,96 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { Line } from "@react-three/drei";
+import * as THREE from "three";
 
-function Box({ position, color1, color2, setBoxText }) {
+function SphereObj({ position, color1, color2 }) {
   const meshRef = useRef();
   const [hovered, setHover] = useState(false);
   const [active, setActive] = useState(false);
-  const [shakeRadius] = useState(6); // Shake radius
-  const [theta, setTheta] = useState(Math.random() * Math.PI); // Angle from Y-axis
-  const [phi, setPhi] = useState(Math.random() * 2 * Math.PI); // Angle from XZ-plane
-  useFrame((state, delta) => {
-    meshRef.current.rotation.x += delta;
-    meshRef.current.rotation.z += delta * 0.5;
-    meshRef.current.rotation.y += delta * 0.5;
-    // Shake logic: Formula Way
-    const speed = 2; // Speed of shaking
-    const newTheta = theta + speed * delta * (Math.random() - 0.5); // Randomize theta
-    const newPhi = phi + speed * delta * (Math.random() - 0.5); // Randomize phi
-
-    // Convert spherical coordinates to Cartesian coordinates
-    const newX =
-      position[0] + shakeRadius * Math.sin(newTheta) * Math.cos(newPhi);
-    const newY = position[1] + shakeRadius * Math.cos(newTheta);
-    const newZ =
-      position[2] + shakeRadius * Math.sin(newTheta) * Math.sin(newPhi);
-
-    // Update the box position
-    meshRef.current.position.set(newX, newY, newZ);
-
-    // Update theta and phi for the next frame
-    setTheta(newTheta);
-    setPhi(newPhi);
-  });
   return (
     <mesh
       position={position}
+      rotation={[0, 0, 20]}
       ref={meshRef}
       scale={active ? 1.5 : 1}
       onClick={(event) => setActive(!active)}
       onPointerOver={(event) => {
         setHover(true);
-        setBoxText(
-          `This Sphere/Box used a color of ${color2} when not hovered and ${color1} when hovered!`
-        );
       }}
       onPointerOut={(event) => {
         setHover(false);
-        setBoxText(null);
       }}
     >
-      <sphereGeometry args={[1, 64, 64]} />
+      <sphereGeometry args={[9, 64, 64]} />
       <meshStandardMaterial color={hovered ? color1 : color2} />
     </mesh>
   );
 }
 
-function getRandomColor() {
-  var letters = "0123456789ABCDEF";
-  var color = "#";
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
+function CurveComponent({ xRadius, yRadius, color }) {
+  // Define control points for the curve
+
+  const ellipseCurve = new THREE.EllipseCurve(
+    0,
+    0,
+    xRadius,
+    yRadius,
+    0,
+    2 * Math.PI,
+    false,
+    0
+  );
+  const eliRef = useRef();
+  const boxRef = useRef();
+
+  const points = ellipseCurve.getPoints(100);
+  useFrame((state, delta) => {
+    // eliRef.current.rotation.x += delta;
+    // console.log(eliRef.current.rotation);
+    // console.log(delta);
+    const newP = ellipseCurve.getPoint(window.performance.now() * 0.0003 + 0.1);
+    boxRef.current.position.x = newP.x;
+    boxRef.current.position.y = newP.y;
+  });
+  return (
+    <mesh ref={eliRef} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh ref={boxRef} position={[0, 0, 0]}>
+        <boxGeometry args={[20, 20, 20]} />
+        <meshStandardMaterial color={"lime"} />
+      </mesh>
+      <Line
+        points={points} // Array of points to form the line
+        color={color} // Color of the line
+        lineWidth={5} // Width of the line
+      />
+    </mesh>
+  );
 }
 
 export default function Home() {
-  const [boxCoords, setBoxCoords] = useState([{}]);
-  const [boxText, setBoxText] = useState(null);
-  const [sphereCount, setSphereCount] = useState(30);
-  useEffect(() => {
-    const MaxXCord = 30;
-    const MaxYCord = 30;
-    const MaxZCord = 90;
-    const newBoxCoords = [];
-    let spher1 = 0;
-    const intId = setInterval(() => {
-      // console.log(sphereCount, spher1, intId);
-      if (spher1 === sphereCount) {
-        // console.log("in 1");
-        clearInterval(intId);
-        return;
-      } else {
-        // console.log("in 2");
-        const x1 = Math.floor(Math.random() * MaxXCord) - 15;
-        const y1 = Math.floor(Math.random() * MaxYCord) - 15;
-        const z1 = Math.floor(Math.random() * MaxZCord) - 45;
-        newBoxCoords.push({
-          position: [x1, y1, z1],
-          color1: getRandomColor(),
-          color2: getRandomColor(),
-        });
-        setBoxCoords([...newBoxCoords]);
-        spher1 += 1;
-      }
-    }, 50);
-    return () => clearInterval(intId);
-  }, [sphereCount]);
   return (
-    <main className="h-screen m-[unset] bg-slate-200">
-      {/* <p>{boxCoords}</p> */}
-      {boxText !== null && (
-        <div
-          style={{ backgroundColor: getRandomColor() }}
-          className="fixed bg-red-500 w-48 shadow-xl text-white
-      z-50 flex flex-col space-y-10 px-4 py-7 top-0 right-0 m-4"
-        >
-          <h2 className="font-bold">Details of Sphere/Box</h2>
-          <p>{boxText}</p>
-        </div>
-      )}
-      <div
-        className="fixed bg-red-500 w-48 shadow-xl text-white
-      z-50 flex flex-col space-y-10 px-4 py-7 bottom-0 right-0 m-4"
-      >
-        <h2 className="font-bold">Change Sphere Count</h2>
-        <input
-          className="w-full border-0 bg-red-400 rounded-md pl-3 py-2 outline-none text-white"
-          type="text"
-          onChange={(e) => setSphereCount(parseInt(e.target.value))}
-          value={sphereCount}
-        />
-      </div>
+    <main className="h-screen m-[unset] bg-slate-700">
       <Canvas camera={{ position: [60, 30, 30], fov: 75, far: 5000, near: 1 }}>
         <OrbitControls />
         <ambientLight intensity={Math.PI / 2} />
-        <spotLight
-          position={[10, 10, 10]}
+        <pointLight
+          position={[100, 90, 90]}
           angle={0.15}
           penumbra={1}
           decay={0}
-          intensity={Math.PI}
+          intensity={Math.PI * 1}
         />
-        <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-        {boxCoords.map((ele, index) => (
-          <Box
-            key={index}
-            position={ele.position}
-            color2={ele.color2}
-            color1={ele.color1}
-            setBoxText={setBoxText}
-          />
-        ))}
+        <mesh position={[100, 90, 90]}>
+          <boxGeometry args={[5, 5, 5]} />
+        </mesh>
+
+        <CurveComponent xRadius={50} yRadius={45} color={"red"} />
+        <SphereObj position={[0, 0, 0]} color1={"#FFA500"} color2={"#FF8C00"} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -30, 0]}>
+          <planeGeometry args={[1000, 1000]} />
+          <meshStandardMaterial color={"#ff0000"} />
+        </mesh>
       </Canvas>
     </main>
   );
