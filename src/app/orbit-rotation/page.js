@@ -22,10 +22,14 @@ function BigSphereObj({ position, color1, color2 }) {
   const meshRef = useRef();
   const [hovered, setHover] = useState(false);
   const [active, setActive] = useState(false);
+  const colorMap = useLoader(TextureLoader, "/texture/2k_sun.jpg");
+  useFrame((state, delta) => {
+    meshRef.current.rotation.y += delta * 0.3;
+  });
   return (
     <mesh
       position={position}
-      rotation={[0, 0, 20]}
+      rotation={[0, 0, 0]}
       ref={meshRef}
       scale={active ? 1.5 : 1}
       onClick={(event) => setActive(!active)}
@@ -46,7 +50,8 @@ function BigSphereObj({ position, color1, color2 }) {
       />
       <sphereGeometry args={[20, 64, 64]} />
       <meshStandardMaterial
-        color={hovered ? color1 : color2}
+        // color={hovered ? color1 : color2}
+        map={colorMap}
         emissive="orange"
         emissiveIntensity={2}
         toneMapped={false}
@@ -64,12 +69,11 @@ function SmallSphereObj({
 }) {
   const meshRef = useRef();
   const meshRef1 = useRef();
-    const [colorMap, displacementMap, normalMap] =
-      useLoader(TextureLoader, [
-        colorMapLoc,
-        "/texture/2k_earth_specular_map.jpg",
-        "/texture/2k_earth_normal_map.jpg",
-      ]);
+  const [colorMap, displacementMap, normalMap] = useLoader(TextureLoader, [
+    colorMapLoc,
+    "/texture/2k_earth_specular_map.jpg",
+    "/texture/2k_earth_normal_map.jpg",
+  ]);
   const [hovered, setHover] = useState(false);
   useFrame((state, delta) => {
     meshRef1.current.rotation.y += delta;
@@ -95,7 +99,6 @@ function SmallSphereObj({
           map={colorMap}
           displacementScale={-0.2}
           displacementMap={displacementMap}
-          
           normalMap={normalMap}
           // color={hovered ? color1 : color2}
           toneMapped={false}
