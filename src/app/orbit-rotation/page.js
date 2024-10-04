@@ -1,9 +1,13 @@
 "use client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Stars, useGLTF } from "@react-three/drei";
+import { Canvas, useFrame, extend } from "@react-three/fiber";
+import { BakeShadows, Effects, OrbitControls, Stars, useGLTF } from "@react-three/drei";
 import { Line } from "@react-three/drei";
+import { Bloom } from "@react-three/postprocessing";
+import { BlurPass, Resizer, KernelSize, Resolution } from "postprocessing";
 import * as THREE from "three";
+import { UnrealBloomPass } from "three-stdlib";
+extend({ UnrealBloomPass });
 
 function BigSphereObj({ position, color1, color2 }) {
   const meshRef = useRef();
@@ -23,8 +27,14 @@ function BigSphereObj({ position, color1, color2 }) {
         setHover(false);
       }}
     >
+      {/* <hemisphereLight position={[0,0,0]} intensity={5}  color="red" groundColor="yellow" /> */}
       <sphereGeometry args={[20, 64, 64]} />
-      <meshStandardMaterial color={hovered ? color1 : color2} />
+      <meshStandardMaterial
+        color={hovered ? color1 : color2}
+        emissive="orange"
+        emissiveIntensity={4}
+        toneMapped={false}
+      />
     </mesh>
   );
 }
@@ -45,7 +55,10 @@ function SmallSphereObj({ color1, color2, sizePla }) {
       }}
     >
       <sphereGeometry args={[sizePla, 64, 64]} />
-      <meshStandardMaterial color={hovered ? color1 : color2} />
+      <meshStandardMaterial
+        color={hovered ? color1 : color2}
+        toneMapped={false}
+      />
     </mesh>
   );
 }
@@ -182,11 +195,13 @@ function AsteriodOrbitComponent({ xRadius, yRadius, colorOrbit, speedPla }) {
 
 export default function Home() {
   return (
-    <main className="h-screen m-[unset] bg-slate-900">
-      <Canvas camera={{ position: [60, 30, 30], fov: 75, far: 5000, near: 1 }}>
+    <main className="h-screen m-[unset] bg-slate-950">
+      <Canvas
+        camera={{ position: [240, 120, 120], fov: 50, far: 5000, near: 1 }}
+      >
         <OrbitControls />
         <ambientLight intensity={Math.PI / 2} />
-        <Stars radius={500} />
+        <Stars radius={1000} count={50000} depth={100} saturation={50} />
         <pointLight
           position={[100, 90, 90]}
           angle={0.15}
@@ -194,9 +209,20 @@ export default function Home() {
           decay={0}
           intensity={Math.PI * 1}
         />
-        {/* <mesh position={[100, 90, 90]}>
-          <boxGeometry args={[5, 5, 5]} />
-        </mesh> */}
+        <Effects disableGamma>
+          <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
+        </Effects>
+        <BakeShadows />
+        {/* <Bloom
+          intensity={1.0} // The bloom intensity.
+          blurPass={undefined} // A blur pass.
+          kernelSize={KernelSize.LARGE} // blur kernel size
+          luminanceThreshold={0.9} // luminance threshold. Raise this value to mask out darker elements in the scene.
+          luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
+          mipmapBlur={false} // Enables or disables mipmap blur.
+          resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
+          resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
+        /> */}
 
         <OrbitComponent
           xRadius={50}
@@ -204,7 +230,7 @@ export default function Home() {
           colorOrbit={"red"}
           colorPla1={"#E5E5E5"}
           colorPla2={"#b0b0b0"}
-          speedPla={2}
+          speedPla={0.2}
           sizePla={3}
         />
         <OrbitComponent
@@ -213,7 +239,7 @@ export default function Home() {
           colorOrbit={"hotpink"}
           colorPla1={"#f8e2b0"}
           colorPla2={"#bdac86"}
-          speedPla={1.5}
+          speedPla={0.15}
           sizePla={3.5}
         />
         <OrbitComponent
@@ -222,7 +248,7 @@ export default function Home() {
           colorOrbit={"green"}
           colorPla1={"#233675"}
           colorPla2={"#40de55"}
-          speedPla={1}
+          speedPla={0.1}
           sizePla={4.5}
         />
         <OrbitComponent
@@ -231,7 +257,7 @@ export default function Home() {
           colorOrbit={"lime"}
           colorPla1={"#663023"}
           colorPla2={"#a14b35"}
-          speedPla={0.5}
+          speedPla={0.05}
           sizePla={4.5}
         />
         <AsteriodOrbitComponent
@@ -246,7 +272,7 @@ export default function Home() {
           colorOrbit={"orange"}
           colorPla1={"yellow"}
           colorPla2={"red"}
-          speedPla={0.2}
+          speedPla={0.02}
           sizePla={6}
         />
         <BigSphereObj
@@ -254,10 +280,6 @@ export default function Home() {
           color1={"#FFA500"}
           color2={"#FF8C00"}
         />
-        {/* <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -50, 0]}>
-          <planeGeometry args={[1000, 1000]} />
-          <meshStandardMaterial color={"#3c3e42"} />
-        </mesh> */}
       </Canvas>
     </main>
   );
