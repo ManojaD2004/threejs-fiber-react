@@ -61,8 +61,6 @@ function BigSphereObj({ position, color1, color2 }) {
 }
 
 function SmallSphereObj({
-  color1,
-  color2,
   sizePla,
   plaName = "Planet",
   colorMapLoc = "/texture/2k_earth_daymap.jpg",
@@ -100,7 +98,6 @@ function SmallSphereObj({
           displacementScale={-0.2}
           displacementMap={displacementMap}
           normalMap={normalMap}
-          // color={hovered ? color1 : color2}
           toneMapped={false}
         />
       </mesh>
@@ -112,8 +109,7 @@ function OrbitComponent({
   xRadius,
   yRadius,
   colorOrbit,
-  colorPla1,
-  colorPla2,
+  colorMapLoc,
   sizePla,
   speedPla,
 }) {
@@ -143,11 +139,7 @@ function OrbitComponent({
   return (
     <mesh ref={eliRef} rotation={[Math.PI / 2, 0, 0]}>
       <mesh ref={boxRef} position={[0, 0, 0]}>
-        <SmallSphereObj
-          color1={colorPla1}
-          color2={colorPla2}
-          sizePla={sizePla}
-        />
+        <SmallSphereObj colorMapLoc={colorMapLoc} sizePla={sizePla} />
       </mesh>
       <mesh>
         <Line
@@ -292,8 +284,7 @@ export default function Home() {
           xRadius={50}
           yRadius={45}
           colorOrbit={"red"}
-          colorPla1={"#E5E5E5"}
-          colorPla2={"#b0b0b0"}
+          colorMapLoc={"/texture/2k_mercury.jpg"}
           speedPla={0.2}
           sizePla={3}
         />
@@ -301,17 +292,15 @@ export default function Home() {
           xRadius={80}
           yRadius={75}
           colorOrbit={"gray"}
-          colorPla1={"#f8e2b0"}
-          colorPla2={"#bdac86"}
+          colorMapLoc={"/texture/2k_venus_surface.jpg"}
           speedPla={0.15}
           sizePla={3.5}
         />
         <OrbitComponent
           xRadius={150}
           yRadius={145}
+          colorMapLoc={"/texture/2k_earth_daymap.jpg"}
           colorOrbit={"green"}
-          colorPla1={"#233675"}
-          colorPla2={"#40de55"}
           speedPla={0.1}
           sizePla={4.5}
         />
@@ -319,8 +308,7 @@ export default function Home() {
           xRadius={200}
           yRadius={195}
           colorOrbit={"lime"}
-          colorPla1={"#663023"}
-          colorPla2={"#a14b35"}
+          colorMapLoc={"/texture/2k_mars.jpg"}
           speedPla={0.05}
           sizePla={4.5}
         />
@@ -334,8 +322,7 @@ export default function Home() {
           xRadius={450}
           yRadius={435}
           colorOrbit={"orange"}
-          colorPla1={"yellow"}
-          colorPla2={"red"}
+          colorMapLoc={"/texture/2k_jupiter.jpg"}
           speedPla={0.02}
           sizePla={6}
         />
