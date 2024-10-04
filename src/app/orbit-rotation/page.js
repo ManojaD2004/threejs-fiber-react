@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, Stars, useGLTF } from "@react-three/drei";
 import { Line } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -182,10 +182,11 @@ function AsteriodOrbitComponent({ xRadius, yRadius, colorOrbit, speedPla }) {
 
 export default function Home() {
   return (
-    <main className="h-screen m-[unset] bg-slate-700">
+    <main className="h-screen m-[unset] bg-slate-900">
       <Canvas camera={{ position: [60, 30, 30], fov: 75, far: 5000, near: 1 }}>
         <OrbitControls />
         <ambientLight intensity={Math.PI / 2} />
+        <Stars radius={500} />
         <pointLight
           position={[100, 90, 90]}
           angle={0.15}
@@ -253,10 +254,10 @@ export default function Home() {
           color1={"#FFA500"}
           color2={"#FF8C00"}
         />
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -50, 0]}>
+        {/* <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -50, 0]}>
           <planeGeometry args={[1000, 1000]} />
           <meshStandardMaterial color={"#3c3e42"} />
-        </mesh>
+        </mesh> */}
       </Canvas>
     </main>
   );
