@@ -198,7 +198,15 @@ function AsteriodOrbitComponent({ xRadius, yRadius, colorOrbit, speedPla }) {
           />
         </mesh>
       ))}
-      <Line points={points} color={colorOrbit} lineWidth={3} />
+      <mesh>
+        <Line
+          points={points}
+          color={"white"}
+          lineWidth={1}
+          transparent={true}
+          opacity={0.1} // Adjust the opacity as needed
+        />
+      </mesh>
     </mesh>
   );
 }
@@ -211,7 +219,7 @@ export default function Home() {
       >
         <OrbitControls />
         <ambientLight intensity={Math.PI / 2} />
-        <Stars radius={1000} count={50000} depth={100} saturation={50} />
+        <Stars radius={1000} count={15000} depth={100} saturation={100} />
         <pointLight
           position={[100, 90, 90]}
           angle={0.15}
