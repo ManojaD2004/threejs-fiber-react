@@ -1,7 +1,13 @@
 "use client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, extend } from "@react-three/fiber";
-import { BakeShadows, Effects, OrbitControls, Stars, useGLTF } from "@react-three/drei";
+import {
+  BakeShadows,
+  Effects,
+  OrbitControls,
+  Stars,
+  useGLTF,
+} from "@react-three/drei";
 import { Line } from "@react-three/drei";
 import { Bloom } from "@react-three/postprocessing";
 import { BlurPass, Resizer, KernelSize, Resolution } from "postprocessing";
@@ -104,11 +110,15 @@ function OrbitComponent({
           sizePla={sizePla}
         />
       </mesh>
-      <Line
-        points={points} // Array of points to form the line
-        color={colorOrbit} // Color of the line
-        lineWidth={3} // Width of the line
-      />
+      <mesh>
+        <Line
+          points={points}
+          color={"white"}
+          lineWidth={1}
+          transparent={true}
+          opacity={0.1} // Adjust the opacity as needed
+        />
+      </mesh>
     </mesh>
   );
 }
@@ -236,7 +246,7 @@ export default function Home() {
         <OrbitComponent
           xRadius={80}
           yRadius={75}
-          colorOrbit={"hotpink"}
+          colorOrbit={"gray"}
           colorPla1={"#f8e2b0"}
           colorPla2={"#bdac86"}
           speedPla={0.15}
