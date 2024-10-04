@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, extend } from "@react-three/fiber";
+import { Canvas, useFrame, extend, useLoader } from "@react-three/fiber";
+import { TextureLoader } from "three/src/loaders/TextureLoader";
 import {
   BakeShadows,
   Effects,
@@ -54,13 +55,27 @@ function BigSphereObj({ position, color1, color2 }) {
   );
 }
 
-function SmallSphereObj({ color1, color2, sizePla, plaName = "Planet" }) {
+function SmallSphereObj({
+  color1,
+  color2,
+  sizePla,
+  plaName = "Planet",
+  colorMapLoc = "/texture/2k_earth_daymap.jpg",
+}) {
   const meshRef = useRef();
+  const meshRef1 = useRef();
+    const [colorMap, displacementMap, normalMap] =
+      useLoader(TextureLoader, [
+        colorMapLoc,
+        "/texture/2k_earth_specular_map.jpg",
+        "/texture/2k_earth_normal_map.jpg",
+      ]);
   const [hovered, setHover] = useState(false);
+  useFrame((state, delta) => {
+    meshRef1.current.rotation.y += delta;
+  });
   return (
-    <mesh
-      rotation={[0, 0, 20]}
-      ref={meshRef}
+    <group
       scale={hovered ? 3 : 1}
       onPointerOver={(event) => {
         setHover(true);
@@ -74,12 +89,19 @@ function SmallSphereObj({ color1, color2, sizePla, plaName = "Planet" }) {
           {plaName}
         </div>
       </Html> */}
-      <sphereGeometry args={[sizePla, 64, 64]} />
-      <meshStandardMaterial
-        color={hovered ? color1 : color2}
-        toneMapped={false}
-      />
-    </mesh>
+      <mesh ref={meshRef1} rotation={[-Math.PI / 2, 0, 0]}>
+        <sphereGeometry args={[sizePla, 64, 64]} />
+        <meshStandardMaterial
+          map={colorMap}
+          displacementScale={-0.2}
+          displacementMap={displacementMap}
+          
+          normalMap={normalMap}
+          // color={hovered ? color1 : color2}
+          toneMapped={false}
+        />
+      </mesh>
+    </group>
   );
 }
 
