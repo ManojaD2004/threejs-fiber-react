@@ -5,14 +5,15 @@ import {
   BakeShadows,
   Effects,
   OrbitControls,
+  PointMaterial,
+  Points,
   Stars,
   useGLTF,
 } from "@react-three/drei";
 import { Line } from "@react-three/drei";
-import { Bloom } from "@react-three/postprocessing";
-import { BlurPass, Resizer, KernelSize, Resolution } from "postprocessing";
 import * as THREE from "three";
 import { UnrealBloomPass } from "three-stdlib";
+import { random } from "maath";
 extend({ UnrealBloomPass });
 
 function BigSphereObj({ position, color1, color2 }) {
@@ -34,11 +35,18 @@ function BigSphereObj({ position, color1, color2 }) {
       }}
     >
       {/* <hemisphereLight position={[0,0,0]} intensity={5}  color="red" groundColor="yellow" /> */}
+      <pointLight
+        position={[0, 0, 0]}
+        angle={0.15}
+        penumbra={1}
+        decay={0}
+        intensity={Math.PI * 5}
+      />
       <sphereGeometry args={[20, 64, 64]} />
       <meshStandardMaterial
         color={hovered ? color1 : color2}
         emissive="orange"
-        emissiveIntensity={4}
+        emissiveIntensity={2}
         toneMapped={false}
       />
     </mesh>
@@ -219,14 +227,22 @@ export default function Home() {
       >
         <OrbitControls />
         <ambientLight intensity={Math.PI / 2} />
-        <Stars radius={1000} count={15000} depth={100} saturation={100} />
-        <pointLight
+        <Stars
+          radius={500}
+          count={50000}
+          depth={600}
+          factor={20}
+          // saturation={100}
+          fade={true}
+          speed={1}
+        />
+        {/* <pointLight
           position={[100, 90, 90]}
           angle={0.15}
           penumbra={1}
           decay={0}
           intensity={Math.PI * 1}
-        />
+        /> */}
         <Effects disableGamma>
           <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
         </Effects>
@@ -241,7 +257,6 @@ export default function Home() {
           resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
           resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
         /> */}
-
         <OrbitComponent
           xRadius={50}
           yRadius={45}
