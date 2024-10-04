@@ -4,6 +4,7 @@ import { Canvas, useFrame, extend } from "@react-three/fiber";
 import {
   BakeShadows,
   Effects,
+  Html,
   OrbitControls,
   PointMaterial,
   Points,
@@ -53,7 +54,7 @@ function BigSphereObj({ position, color1, color2 }) {
   );
 }
 
-function SmallSphereObj({ color1, color2, sizePla }) {
+function SmallSphereObj({ color1, color2, sizePla, plaName = "Planet" }) {
   const meshRef = useRef();
   const [hovered, setHover] = useState(false);
   return (
@@ -68,6 +69,11 @@ function SmallSphereObj({ color1, color2, sizePla }) {
         setHover(false);
       }}
     >
+      <Html>
+        <div className=" text-white text-xl pointer-events-none pb-96 select-none">
+          {plaName}
+        </div>
+      </Html>
       <sphereGeometry args={[sizePla, 64, 64]} />
       <meshStandardMaterial
         color={hovered ? color1 : color2}
