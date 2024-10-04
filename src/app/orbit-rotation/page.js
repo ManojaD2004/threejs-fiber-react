@@ -69,11 +69,11 @@ function SmallSphereObj({ color1, color2, sizePla, plaName = "Planet" }) {
         setHover(false);
       }}
     >
-      <Html>
+      {/* <Html>
         <div className=" text-white text-xl pointer-events-none pb-96 select-none">
           {plaName}
         </div>
-      </Html>
+      </Html> */}
       <sphereGeometry args={[sizePla, 64, 64]} />
       <meshStandardMaterial
         color={hovered ? color1 : color2}
