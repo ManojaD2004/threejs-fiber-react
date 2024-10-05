@@ -21,7 +21,7 @@ function BigSphereObj({ position, color1, color2 }) {
   const meshRef = useRef();
   const [hovered, setHover] = useState(false);
   const [active, setActive] = useState(false);
-  const colorMap = useLoader(TextureLoader, "/texture/2k_sun.jpg");
+  const colorMap = useLoader(TextureLoader, "/texture/solar/sun/2k_sun.jpg");
   useFrame((state, delta) => {
     meshRef.current.rotation.y += delta * 0.3;
   });
@@ -62,14 +62,14 @@ function BigSphereObj({ position, color1, color2 }) {
 function SmallSphereObj({
   sizePla,
   plaName = "Planet",
-  colorMapLoc = "/texture/2k_earth_daymap.jpg",
+  colorMapLoc = "/texture/solar/earth/2k_earth_daymap.jpg",
 }) {
   const meshRef = useRef();
   const meshRef1 = useRef();
   const [colorMap, displacementMap, normalMap] = useLoader(TextureLoader, [
     colorMapLoc,
-    "/texture/2k_earth_specular_map.jpg",
-    "/texture/2k_earth_normal_map.jpg",
+    "/texture/solar/earth/2k_earth_specular_map.jpg",
+    "/texture/solar/earth/2k_earth_normal_map.jpg",
   ]);
   const [hovered, setHover] = useState(false);
   useFrame((state, delta) => {
@@ -285,7 +285,7 @@ export default function Home() {
           xRadius={50}
           yRadius={45}
           colorOrbit={"red"}
-          colorMapLoc={"/texture/2k_mercury.jpg"}
+          colorMapLoc={"/texture/solar/mercury/2k_mercury.jpg"}
           speedPla={0.2}
           sizePla={3}
         />
@@ -293,14 +293,14 @@ export default function Home() {
           xRadius={80}
           yRadius={75}
           colorOrbit={"gray"}
-          colorMapLoc={"/texture/2k_venus_surface.jpg"}
+          colorMapLoc={"/texture/solar/venus/2k_venus_surface.jpg"}
           speedPla={0.15}
           sizePla={3.5}
         />
         <OrbitComponent
           xRadius={150}
           yRadius={145}
-          colorMapLoc={"/texture/2k_earth_daymap.jpg"}
+          colorMapLoc={"/texture/solar/earth/2k_earth_daymap.jpg"}
           colorOrbit={"green"}
           speedPla={0.1}
           sizePla={4.5}
@@ -309,7 +309,7 @@ export default function Home() {
           xRadius={200}
           yRadius={195}
           colorOrbit={"lime"}
-          colorMapLoc={"/texture/2k_mars.jpg"}
+          colorMapLoc={"/texture/solar/mars/2k_mars.jpg"}
           speedPla={0.05}
           sizePla={4.5}
         />
@@ -323,7 +323,7 @@ export default function Home() {
           xRadius={450}
           yRadius={435}
           colorOrbit={"orange"}
-          colorMapLoc={"/texture/2k_jupiter.jpg"}
+          colorMapLoc={"/texture/solar/jupiter/2k_jupiter.jpg"}
           speedPla={0.02}
           sizePla={6}
         />
