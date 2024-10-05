@@ -41,7 +41,7 @@ function BigSphereObj({
   });
   return (
     <mesh ref={sunRef}>
-      {changeViewPer === false && (
+      {/* {changeViewPer === false && (
         <Html>
           <div
             onClick={() => setChangeView(true)}
@@ -50,7 +50,7 @@ function BigSphereObj({
             I am here
           </div>
         </Html>
-      )}
+      )} */}
       <mesh position={position} rotation={[0, 0, 0]} ref={meshRef}>
         <pointLight
           position={[0, 0, 0]}
@@ -101,7 +101,7 @@ function SmallSphereObj({
         setHover(false);
       }}
     >
-      {changeViewPer === true && (
+      {/* {changeViewPer === true && (
         <Html>
           <div
             onClick={() => setChangeView(false)}
@@ -110,7 +110,7 @@ function SmallSphereObj({
             I am here
           </div>
         </Html>
-      )}
+      )} */}
       <mesh rotation={[-Math.PI / 10, 0, 0]} ref={planetRef}>
         <mesh ref={meshRef1} rotation={[-Math.PI / 2, 0, 0]}>
           <sphereGeometry args={[SPACE_SIZE * scaleRatio, 64, 64]} />
@@ -272,14 +272,14 @@ function ThreeDComp({ changeViewPer, setChangeView }) {
         rotateSpeed={2}
       />
       <ambientLight intensity={Math.PI / 2} />
-      {/* <Stars
+      <Stars
         radius={50 * SPACE_SIZE}
         count={10000}
         depth={600}
         factor={20}
         fade={true}
         speed={1}
-      /> */}
+      />
       <Effects disableGamma>
         <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
       </Effects>

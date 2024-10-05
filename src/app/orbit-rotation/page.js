@@ -247,7 +247,7 @@ function AsteriodOrbitComponent({ xRadius, yRadius, colorOrbit, speedPla }) {
 
 export default function Home() {
   return (
-    <main className="h-screen m-[unset] bg-slate-950">
+    <main className="h-screen w-full m-[unset] bg-slate-950">
       <Canvas
         camera={{ position: [240, 120, 120], fov: 50, far: 5000, near: 1 }}
       >
@@ -273,16 +273,6 @@ export default function Home() {
           <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
         </Effects>
         <BakeShadows />
-        {/* <Bloom
-          intensity={1.0} // The bloom intensity.
-          blurPass={undefined} // A blur pass.
-          kernelSize={KernelSize.LARGE} // blur kernel size
-          luminanceThreshold={0.9} // luminance threshold. Raise this value to mask out darker elements in the scene.
-          luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
-          mipmapBlur={false} // Enables or disables mipmap blur.
-          resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
-          resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
-        /> */}
         <OrbitComponent
           xRadius={50}
           yRadius={45}
