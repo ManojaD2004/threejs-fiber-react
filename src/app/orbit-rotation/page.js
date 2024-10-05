@@ -92,6 +92,7 @@ function SmallSphereObj({
       </Html> */}
       <mesh rotation={[-Math.PI / 10, 0, 0]}>
         <mesh ref={meshRef1} rotation={[-Math.PI / 2, 0, 0]}>
+          
           <sphereGeometry args={[sizePla, 64, 64]} />
           <meshStandardMaterial
             map={colorMap}
@@ -113,6 +114,7 @@ function OrbitComponent({
   colorMapLoc,
   sizePla,
   speedPla,
+  plaName
 }) {
   // Define control points for the curve
 
@@ -140,7 +142,7 @@ function OrbitComponent({
   return (
     <mesh ref={eliRef} rotation={[Math.PI / 2, 0, 0]}>
       <mesh ref={boxRef} position={[0, 0, 0]}>
-        <SmallSphereObj colorMapLoc={colorMapLoc} sizePla={sizePla} />
+        <SmallSphereObj colorMapLoc={colorMapLoc} sizePla={sizePla} plaName={plaName} />
       </mesh>
       <mesh>
         <Line
@@ -309,6 +311,7 @@ export default function Home() {
           xRadius={200}
           yRadius={195}
           colorOrbit={"lime"}
+          plaName={"1"}
           colorMapLoc={"/texture/solar/mars/2k_mars.jpg"}
           speedPla={0.05}
           sizePla={4.5}
