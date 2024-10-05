@@ -23,17 +23,35 @@ extend({ UnrealBloomPass });
 
 const SPACE_SIZE = 3;
 const ORBIT_TO_SUN = 0.003;
+// the ratio between distance between SUN and Earth to Radius of the SUN
 
-function BigSphereObj({ position, scaleRatio, sunRef }) {
+function BigSphereObj({
+  position,
+  scaleRatio,
+  sunRef,
+  colorMapLoc = "/texture/solar/sun/2k_sun.jpg",
+  emissiveColor = "orange",
+  setChangeView,
+  changeViewPer,
+}) {
   const meshRef = useRef();
-  const colorMap = useLoader(TextureLoader, "/texture/solar/sun/2k_sun.jpg");
+  const colorMap = useLoader(TextureLoader, colorMapLoc);
   useFrame((state, delta) => {
     meshRef.current.rotation.y += delta * 0.3;
   });
   return (
     <mesh ref={sunRef}>
+      {changeViewPer === false && (
+        <Html>
+          <div
+            onClick={() => setChangeView(true)}
+            className="text-white text-lg select-none cursor-pointer"
+          >
+            I am here
+          </div>
+        </Html>
+      )}
       <mesh position={position} rotation={[0, 0, 0]} ref={meshRef}>
-        <perspectiveCamera />
         <pointLight
           position={[0, 0, 0]}
           angle={0.15}
@@ -46,7 +64,7 @@ function BigSphereObj({ position, scaleRatio, sunRef }) {
         />
         <meshStandardMaterial
           map={colorMap}
-          emissive="orange"
+          emissive={emissiveColor}
           emissiveIntensity={2}
           toneMapped={false}
         />
@@ -61,6 +79,7 @@ function SmallSphereObj({
   scaleRatio,
   planetRef,
   changeViewPer,
+  setChangeView,
 }) {
   const meshRef1 = useRef();
   const [colorMap, displacementMap, normalMap] = useLoader(TextureLoader, [
@@ -84,7 +103,12 @@ function SmallSphereObj({
     >
       {changeViewPer === true && (
         <Html>
-          <div className="text-white text-lg select-none">I am here</div>
+          <div
+            onClick={() => setChangeView(false)}
+            className="text-white text-lg select-none cursor-pointer"
+          >
+            I am here
+          </div>
         </Html>
       )}
       <mesh rotation={[-Math.PI / 10, 0, 0]} ref={planetRef}>
@@ -111,6 +135,8 @@ function OrbitComponent({
   scaleRatio,
   planetRef,
   changeViewPer,
+  setChangeView,
+  zValue = 1
 }) {
   const ellipseCurve = new THREE.EllipseCurve(
     0,
@@ -128,52 +154,47 @@ function OrbitComponent({
   const points = ellipseCurve.getPoints(500);
   useFrame((state, delta) => {
     const newP = ellipseCurve.getPoint(
-      window.performance.now() * 0.0003 * speedPla + 0.1
+      window.performance.now() * 0.0003 * speedPla
     );
     boxRef.current.position.x = newP.x;
     boxRef.current.position.y = newP.y;
   });
   return (
-    <mesh ref={eliRef} position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
+    <mesh ref={eliRef} position={[0, 0, 0]} rotation={[Math.PI / 2 * zValue, 0, 0]}>
       <mesh ref={boxRef} position={[0, 0, 0]}>
         <SmallSphereObj
           planetRef={planetRef}
           scaleRatio={scaleRatio}
           colorMapLoc={colorMapLoc}
           changeViewPer={changeViewPer}
+          setChangeView={setChangeView}
         />
       </mesh>
       <mesh>
         <Line
           points={points}
-          color={"blue"}
+          color={"white"}
           lineWidth={1}
           transparent={true}
-          opacity={0.5} // Adjust the opacity as needed
+          opacity={0.9} // Adjust the opacity as needed
         />
       </mesh>
     </mesh>
   );
 }
 
-function ThreeDComp({ changeViewPer }) {
+function ThreeDComp({ changeViewPer, setChangeView }) {
   const planetRef = useRef();
   const cameraRef = useRef();
   const controlsRef = useRef();
   const stopRef = useRef(false);
   const sunRef = useRef();
-  const distanceCamRef = useRef(16);
   const earthOrbit = 23479.8304;
   useThree(({ camera }) => {
     cameraRef.current = camera;
   });
   useEffect(() => {
-    if (
-      changeViewPer === false &&
-      planetRef.current &&
-      cameraRef.current &&
-      controlsRef.current
-    ) {
+    if (changeViewPer === false && planetRef.current && cameraRef.current) {
       const target = new THREE.Vector3();
       const target1 = new THREE.Vector3();
       sunRef.current.getWorldPosition(target1);
@@ -190,7 +211,6 @@ function ThreeDComp({ changeViewPer }) {
       controlsRef.current
     ) {
       const target = new THREE.Vector3();
-
       sunRef.current.getWorldPosition(target);
       const cameraDistance = 5;
       const cameraOffset = new THREE.Vector3(cameraDistance, 0, 0);
@@ -204,38 +224,33 @@ function ThreeDComp({ changeViewPer }) {
     if (changeViewPer === false && controlsRef.current && cameraRef.current) {
       const target = controlsRef.current.target;
       const distance = cameraRef.current.position.distanceTo(target);
-      distanceCamRef.current = distance;
-      planetRef.current.scale.set(
-        200 / distanceCamRef.current,
-        200 / distanceCamRef.current,
-        200 / distanceCamRef.current
-      );
+      planetRef.current.scale.set(10 / distance, 10 / distance, 10 / distance);
     }
     if (
       changeViewPer === false &&
       planetRef.current &&
-      cameraRef.current &&
-      controlsRef.current
+      controlsRef.current &&
+      cameraRef.current
     ) {
       const target = new THREE.Vector3();
       planetRef.current.getWorldPosition(target);
+      // if (stopRef.current === false) {
+      //   const cameraDistance = 10;
+      //   const cameraOffset = new THREE.Vector3(cameraDistance, 0, 0);
+      //   const target1 = new THREE.Vector3();
+      //   const final1 = target.clone().add(cameraOffset);
+      //   sunRef.current.getWorldPosition(target1);
+      //   cameraRef.current.position.lerp(final1, 0.05);
+      //   console.log(cameraRef.current);
+      //   cameraRef.current.lookAt(target1);
+      // }
 
-      // const target1 = new THREE.Vector3();
-      const cameraDistance = 10;
-      const cameraOffset = new THREE.Vector3(cameraDistance, 0, 0);
-      const target2 = controlsRef.current.target;
-      const final1 = target.clone().add(cameraOffset);
-      // console.log(cameraRef.current.position);
-      if (stopRef.current === false) {
-        cameraRef.current.position.lerp(final1, 0.05);
-        cameraRef.current.rotation.set(target2.x, target2.y, target2.z);
-      }
-      controlsRef.current.target.lerp(target, 0.1); // Smoothly follow the planet
+      controlsRef.current.target.lerp(target, 0.1);
       controlsRef.current.update();
+      stopRef.current = false;
     } else if (
       changeViewPer === true &&
       sunRef.current &&
-      cameraRef.current &&
       controlsRef.current
     ) {
       const target = new THREE.Vector3();
@@ -251,22 +266,20 @@ function ThreeDComp({ changeViewPer }) {
         onChange={() => {
           stopRef.current = true;
         }}
-        // enableZoom={changeViewPer}
         enablePan={false}
         zoomToCursor={true}
         zoomSpeed={5}
         rotateSpeed={2}
       />
       <ambientLight intensity={Math.PI / 2} />
-      <Stars
+      {/* <Stars
         radius={50 * SPACE_SIZE}
         count={10000}
         depth={600}
         factor={20}
-        // saturation={100}
         fade={true}
         speed={1}
-      />
+      /> */}
       <Effects disableGamma>
         <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
       </Effects>
@@ -274,17 +287,31 @@ function ThreeDComp({ changeViewPer }) {
       <BigSphereObj
         sunRef={sunRef}
         scaleRatio={109.2983}
+        changeViewPer={changeViewPer}
         position={[0, 0, 0]}
+        setChangeView={setChangeView}
       />
       <OrbitComponent
         xRadius={earthOrbit}
         yRadius={earthOrbit}
-        scaleRatio={0.01}
+        scaleRatio={changeViewPer === true ? 1 * ORBIT_TO_SUN : 1}
         colorMapLoc={"/texture/solar/earth/2k_earth_daymap.jpg"}
         speedPla={0.01}
+        setChangeView={setChangeView}
         planetRef={planetRef}
         changeViewPer={changeViewPer}
       />
+      {/* <OrbitComponent
+        xRadius={earthOrbit}
+        yRadius={earthOrbit}
+        scaleRatio={changeViewPer === true ? 1 * ORBIT_TO_SUN : 1}
+        colorMapLoc={"/texture/solar/earth/2k_earth_daymap.jpg"}
+        speedPla={0.01}
+        setChangeView={setChangeView}
+        planetRef={planetRef}
+        changeViewPer={changeViewPer}
+        zValue={1.25}
+      /> */}
     </>
   );
 }
@@ -304,7 +331,7 @@ export default function Home() {
       <Canvas
         camera={{ position: [240, 120, 120], fov: 50, far: 100000, near: 1 }}
       >
-        <ThreeDComp changeViewPer={changeView} />
+        <ThreeDComp setChangeView={setChangeView} changeViewPer={changeView} />
       </Canvas>
     </main>
   );
