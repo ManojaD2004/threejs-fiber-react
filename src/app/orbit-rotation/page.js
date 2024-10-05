@@ -84,22 +84,23 @@ function SmallSphereObj({
       onPointerOut={(event) => {
         setHover(false);
       }}
-
     >
       {/* <Html>
         <div className=" text-white text-xl pointer-events-none pb-96 select-none">
           {plaName}
         </div>
       </Html> */}
-      <mesh ref={meshRef1} rotation={[-Math.PI / 2, 0, Math.PI /8]}>
-        <sphereGeometry args={[sizePla, 64, 64]} />
-        <meshStandardMaterial
-          map={colorMap}
-          displacementScale={-0.2}
-          displacementMap={displacementMap}
-          normalMap={normalMap}
-          toneMapped={false}
-        />
+      <mesh rotation={[-Math.PI / 10, 0, 0]}>
+        <mesh ref={meshRef1} rotation={[-Math.PI / 2, 0, 0]}>
+          <sphereGeometry args={[sizePla, 64, 64]} />
+          <meshStandardMaterial
+            map={colorMap}
+            displacementScale={-0.2}
+            displacementMap={displacementMap}
+            normalMap={normalMap}
+            toneMapped={false}
+          />
+        </mesh>
       </mesh>
     </group>
   );
