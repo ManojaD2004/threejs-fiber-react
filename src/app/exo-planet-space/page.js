@@ -23,7 +23,6 @@ extend({ UnrealBloomPass });
 
 const SPACE_SIZE = 3;
 const ORBIT_TO_SUN = 0.003;
-// the ratio between distance between SUN and Earth to Radius of the SUN
 
 function BigSphereObj({
   position,
@@ -136,7 +135,7 @@ function OrbitComponent({
   planetRef,
   changeViewPer,
   setChangeView,
-  zValue = 1
+  zValue = 1,
 }) {
   const ellipseCurve = new THREE.EllipseCurve(
     0,
@@ -160,7 +159,11 @@ function OrbitComponent({
     boxRef.current.position.y = newP.y;
   });
   return (
-    <mesh ref={eliRef} position={[0, 0, 0]} rotation={[Math.PI / 2 * zValue, 0, 0]}>
+    <mesh
+      ref={eliRef}
+      position={[0, 0, 0]}
+      rotation={[(Math.PI / 2) * zValue, 0, 0]}
+    >
       <mesh ref={boxRef} position={[0, 0, 0]}>
         <SmallSphereObj
           planetRef={planetRef}
@@ -173,10 +176,10 @@ function OrbitComponent({
       <mesh>
         <Line
           points={points}
-          color={"white"}
+          color={"cyan"}
           lineWidth={1}
           transparent={true}
-          opacity={0.9} // Adjust the opacity as needed
+          opacity={0.9}
         />
       </mesh>
     </mesh>
@@ -189,6 +192,7 @@ function ThreeDComp({ changeViewPer, setChangeView }) {
   const controlsRef = useRef();
   const stopRef = useRef(false);
   const sunRef = useRef();
+  const distanceRef = useRef(1);
   const earthOrbit = 23479.8304;
   useThree(({ camera }) => {
     cameraRef.current = camera;
@@ -221,9 +225,12 @@ function ThreeDComp({ changeViewPer, setChangeView }) {
   }, [changeViewPer]);
 
   useFrame((state, delta) => {
+    const target = controlsRef.current.target;
+    const distance = cameraRef.current.position.distanceTo(target);
+    if (controlsRef.current && cameraRef.current) {
+      distanceRef.current = distance;
+    }
     if (changeViewPer === false && controlsRef.current && cameraRef.current) {
-      const target = controlsRef.current.target;
-      const distance = cameraRef.current.position.distanceTo(target);
       planetRef.current.scale.set(10 / distance, 10 / distance, 10 / distance);
     }
     if (
@@ -272,14 +279,6 @@ function ThreeDComp({ changeViewPer, setChangeView }) {
         rotateSpeed={2}
       />
       <ambientLight intensity={Math.PI / 2} />
-      <Stars
-        radius={50 * SPACE_SIZE}
-        count={10000}
-        depth={600}
-        factor={20}
-        fade={true}
-        speed={1}
-      />
       <Effects disableGamma>
         <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
       </Effects>
@@ -331,6 +330,14 @@ export default function Home() {
       <Canvas
         camera={{ position: [240, 120, 120], fov: 50, far: 100000, near: 1 }}
       >
+        <Stars
+          radius={15000}
+          count={15000}
+          depth={6000}
+          factor={200}
+          fade={true}
+          speed={1}
+        />
         <ThreeDComp setChangeView={setChangeView} changeViewPer={changeView} />
       </Canvas>
     </main>

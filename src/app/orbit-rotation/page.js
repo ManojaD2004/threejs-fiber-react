@@ -258,17 +258,9 @@ export default function Home() {
           count={50000}
           depth={600}
           factor={20}
-          // saturation={100}
           fade={true}
           speed={1}
         />
-        {/* <pointLight
-          position={[100, 90, 90]}
-          angle={0.15}
-          penumbra={1}
-          decay={0}
-          intensity={Math.PI * 1}
-        /> */}
         <Effects disableGamma>
           <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
         </Effects>
