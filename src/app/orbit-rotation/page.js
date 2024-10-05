@@ -15,7 +15,6 @@ import {
 import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import { UnrealBloomPass } from "three-stdlib";
-import { random } from "maath";
 extend({ UnrealBloomPass });
 
 function BigSphereObj({ position, color1, color2 }) {
@@ -46,7 +45,7 @@ function BigSphereObj({ position, color1, color2 }) {
         angle={0.15}
         penumbra={1}
         decay={0}
-        intensity={Math.PI * 5}
+        intensity={Math.PI * 2}
       />
       <sphereGeometry args={[20, 64, 64]} />
       <meshStandardMaterial
@@ -85,13 +84,14 @@ function SmallSphereObj({
       onPointerOut={(event) => {
         setHover(false);
       }}
+
     >
       {/* <Html>
         <div className=" text-white text-xl pointer-events-none pb-96 select-none">
           {plaName}
         </div>
       </Html> */}
-      <mesh ref={meshRef1} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh ref={meshRef1} rotation={[-Math.PI / 2, 0, Math.PI /8]}>
         <sphereGeometry args={[sizePla, 64, 64]} />
         <meshStandardMaterial
           map={colorMap}
