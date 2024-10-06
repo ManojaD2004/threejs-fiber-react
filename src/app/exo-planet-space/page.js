@@ -21,6 +21,10 @@ import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import { UnrealBloomPass } from "three-stdlib";
 extend({ UnrealBloomPass });
+import { Poppins } from "next/font/google";
+
+const poppinsFont = Poppins({ subsets: ["latin"], weight: "400" });
+const poppinsFont1 = Poppins({ subsets: ["latin"], weight: "500" });
 
 const SPACE_SIZE = 3;
 const ORBIT_TO_SUN = 0.003;
@@ -66,6 +70,7 @@ function BigSphereObj({
     <mesh ref={sunRef}>
       {hostName !== systemName && (
         <Html>
+          <div className={poppinsFont1.className}>
           <div
             onClick={() => {
               setChangeView({
@@ -80,6 +85,7 @@ function BigSphereObj({
             className="text-white text-lg select-none cursor-pointer"
           >
             {systemName}
+          </div>
           </div>
         </Html>
       )}
@@ -221,7 +227,7 @@ function OrbitComponent({
 
 function AdjacentText({ targetPositionRef, systemName }) {
   const textRef = useRef();
-  const textOffset = new THREE.Vector3(50, 30, -10); // Example offset to the right of the object
+  const textOffset = new THREE.Vector3(40, 20, -10); // Example offset to the right of the object
 
   useFrame(({ camera }) => {
     textRef.current.lookAt(camera.position);
