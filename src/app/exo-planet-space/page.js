@@ -14,6 +14,7 @@ import {
   Html,
   OrbitControls,
   Stars,
+  Text,
   useGLTF,
 } from "@react-three/drei";
 import { Line } from "@react-three/drei";
@@ -25,9 +26,9 @@ const SPACE_SIZE = 3;
 const ORBIT_TO_SUN = 0.003;
 const DISTANCE_FROM_EARTH_TO_SUN = 23479.8304;
 
-const Default_Data = {
+const DEFAULT_DATA = {
   solar: {
-    active: true,
+    active: false,
     numObj: 0,
   },
   exopla1: {
@@ -52,6 +53,9 @@ function BigSphereObj({
   emissiveColor = "orange",
   setChangeView,
   changeViewPer,
+  setHostName,
+  hostName,
+  systemName,
 }) {
   const meshRef = useRef();
   const colorMap = useLoader(TextureLoader, colorMapLoc);
@@ -60,16 +64,25 @@ function BigSphereObj({
   });
   return (
     <mesh ref={sunRef}>
-      {/* {changeViewPer === false && (
+      {hostName !== systemName && (
         <Html>
           <div
-            onClick={() => setChangeView(true)}
+            onClick={() => {
+              setChangeView({
+                ...DEFAULT_DATA,
+                [systemName]: {
+                  active: true,
+                  numObj: 0,
+                },
+              });
+              setHostName(systemName);
+            }}
             className="text-white text-lg select-none cursor-pointer"
           >
-            I am here
+            {systemName}
           </div>
         </Html>
-      )} */}
+      )}
       <mesh position={position} rotation={[0, 0, 0]} ref={meshRef}>
         <pointLight
           position={[0, 0, 0]}
@@ -206,20 +219,49 @@ function OrbitComponent({
   );
 }
 
+function AdjacentText({ targetPositionRef, systemName }) {
+  const textRef = useRef();
+  const textOffset = new THREE.Vector3(50, 30, -10); // Example offset to the right of the object
+
+  useFrame(({ camera }) => {
+    textRef.current.lookAt(camera.position);
+  });
+
+  return (
+    <Text
+      position={textOffset}
+      ref={textRef}
+      scale={[17, 17, 17]} // Adjust scale as needed
+      color="#cbcbcb"
+      anchorX="center"
+      anchorY="middle"
+      font="/fonts/fox_version_5_by_mickeyfan123_daxvfx5.ttf"
+    >
+      {systemName}
+    </Text>
+  );
+}
+
 function ThreeDComp({
   changeViewPer,
   setChangeView,
   hostName,
-  controlsRef,
   position,
   sunRef,
-  planetRef
+  planetRef,
+  planetScale,
+  systemName,
+  setHostName,
 }) {
   const earthOrbit = DISTANCE_FROM_EARTH_TO_SUN;
   const extractValue = changeViewPer[hostName].numObj;
+  const systemRef = useRef();
 
   return (
-    <group position={position}>
+    <group position={position} ref={systemRef}>
+      {hostName === systemName && (
+        <AdjacentText targetPositionRef={systemRef} systemName={systemName} />
+      )}
       <BigSphereObj
         sunRef={sunRef}
         scaleRatio={109.2983}
@@ -227,6 +269,8 @@ function ThreeDComp({
         position={[0, 0, 0]}
         setChangeView={setChangeView}
         hostName={hostName}
+        systemName={systemName}
+        setHostName={setHostName}
       />
       <OrbitComponent
         xRadius={earthOrbit}
@@ -243,7 +287,7 @@ function ThreeDComp({
   );
 }
 
-function Wrapper3D({ changeView, setChangeView, hostName }) {
+function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
   const controlsRef = useRef();
   const planetRef = useRef();
   const cameraRef = useRef();
@@ -332,27 +376,53 @@ function Wrapper3D({ changeView, setChangeView, hostName }) {
       <ThreeDComp
         setChangeView={setChangeView}
         hostName={hostName}
-        planetRef={hostName === "solar" && planetRef}
-        sunRef={hostName === "solar" && sunRef}
+        systemName={"solar"}
+        planetRef={hostName === "solar" ? planetRef : null}
+        sunRef={hostName === "solar" ? sunRef : null}
         changeViewPer={changeView}
         controlsRef={controlsRef}
         position={[0, 0, 0]}
+        setHostName={setHostName}
+      />
+      <ThreeDComp
+        setChangeView={setChangeView}
+        systemName={"exopla1"}
+        hostName={hostName}
+        planetRef={hostName === "exopla1" ? planetRef : null}
+        sunRef={hostName === "exopla1" ? sunRef : null}
+        changeViewPer={changeView}
+        controlsRef={controlsRef}
+        position={[7000, 0, 7000]}
+        setHostName={setHostName}
+      />
+      <ThreeDComp
+        setChangeView={setChangeView}
+        systemName={"exopla2"}
+        hostName={hostName}
+        planetRef={hostName === "exopla2" ? planetRef : null}
+        sunRef={hostName === "exopla2" ? sunRef : null}
+        changeViewPer={changeView}
+        controlsRef={controlsRef}
+        position={[4000, 0, 3000]}
+        setHostName={setHostName}
       />
       <ThreeDComp
         setChangeView={setChangeView}
         hostName={hostName}
-        planetRef={hostName === "exopla1" && planetRef}
-        sunRef={hostName === "exopla1" && sunRef}
+        systemName={"exopla3"}
+        planetRef={hostName === "exopla3" ? planetRef : null}
+        sunRef={hostName === "exopla3" ? sunRef : null}
         changeViewPer={changeView}
         controlsRef={controlsRef}
-        position={[0, 0, 0]}
+        position={[-4000, 0, -3000]}
+        setHostName={setHostName}
       />
     </>
   );
 }
 
 export default function Home() {
-  const [changeView, setChangeView] = useState(Default_Data);
+  const [changeView, setChangeView] = useState(DEFAULT_DATA);
   const [hostName, setHostName] = useState("solar");
   return (
     <main className="h-screen m-[unset] relative bg-slate-950">
@@ -375,7 +445,7 @@ export default function Home() {
           <div
             onClick={() => {
               setChangeView({
-                ...Default_Data,
+                ...DEFAULT_DATA,
                 solar: { active: true, numObj: 0 },
               });
               setHostName("solar");
@@ -387,7 +457,7 @@ export default function Home() {
           <div
             onClick={() => {
               setChangeView({
-                ...Default_Data,
+                ...DEFAULT_DATA,
                 exopla1: { active: true, numObj: 0 },
               });
               setHostName("exopla1");
@@ -399,7 +469,7 @@ export default function Home() {
           <div
             onClick={() => {
               setChangeView({
-                ...Default_Data,
+                ...DEFAULT_DATA,
                 exopla2: { active: true, numObj: 0 },
               });
               setHostName("exopla2");
@@ -411,7 +481,7 @@ export default function Home() {
           <div
             onClick={() => {
               setChangeView({
-                ...Default_Data,
+                ...DEFAULT_DATA,
                 exopla3: { active: true, numObj: 0 },
               });
               setHostName("exopla3");
@@ -437,6 +507,7 @@ export default function Home() {
           changeView={changeView}
           setChangeView={setChangeView}
           hostName={hostName}
+          setHostName={setHostName}
         />
       </Canvas>
     </main>
