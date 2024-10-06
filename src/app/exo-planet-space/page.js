@@ -27,12 +27,10 @@ const SPACE_SIZE = 3;
 const ORBIT_TO_SUN = 0.003;
 const DISTANCE_FROM_EARTH_TO_SUN = 23479.8304;
 const SUN_RADIUS = 109.2983;
-const EARTH_RADIUS = 1;
+const LIMIT_VALUE = 10;
 
 const DEFAULT_DATA = {
-  solar: {
-    active: true,
-    numObj: 0,
+  Sun: {
     pl_name: "Earth",
     sun_name: "Sun",
     orbit_distance: 1,
@@ -49,33 +47,53 @@ for (let i = 0; i < resultJson.length; i++) {
   const plSize = exoSpace["Planet Radius"].replace(" Earth radii", "");
   const sunSize = exoSpace["Stellar Radius"].replace(" Solar radii", "");
   const worldPosDis = exoSpace["Distance from Earth"].replace(" parsecs", "");
-  const distance = Number(worldPosDis) * 1000;
+  const distance = Number(worldPosDis) * 300;
   const theta = Math.random() * 2 * Math.PI;
   const x = distance * Math.cos(theta);
   const z = distance * Math.sin(theta);
   const worldPosition = [x, 0, z];
-  DEFAULT_DATA[exoSpace["pl_name"]] = {
+  DEFAULT_DATA[exoSpace["hostname"]] = {
     pl_name: exoSpace["pl_name"],
     sun_name: exoSpace["hostname"],
     orbit_distance: orbDis === "" ? 1 : Number(orbDis),
     pl_size: plSize === "" ? 1 : Number(plSize),
     sun_size: sunSize === "" ? 1 : Number(sunSize),
-    numObj: 0,
     world_position: worldPosition,
   };
 }
 
+function AdjacentText({ systemName }) {
+  const textRef = useRef();
+  const textOffset = new THREE.Vector3(50, 30, -10); // Example offset to the right of the object
+
+  useFrame(({ camera }) => {
+    textRef.current.lookAt(camera.position);
+  });
+
+  return (
+    <Text
+      position={textOffset}
+      ref={textRef}
+      scale={[17, 17, 17]} // Adjust scale as needed
+      color="#cbcbcb"
+      anchorX="center"
+      anchorY="middle"
+      font="/fonts/fox_version_5_by_mickeyfan123_daxvfx5.ttf"
+    >
+      {systemName}
+    </Text>
+  );
+}
+
 function BigSphereObj({
-  position,
   scaleRatio,
   sunRef,
-  colorMapLoc = "/texture/solar/sun/2k_sun.jpg",
-  emissiveColor = "orange",
-  setChangeView,
-  changeViewPer,
   setHostName,
+  setPlaOrSun,
   hostName,
   systemName,
+  colorMapLoc = "/texture/solar/sun/2k_sun.jpg",
+  emissiveColor = "orange",
 }) {
   const meshRef = useRef();
   const colorMap = useLoader(TextureLoader, colorMapLoc);
@@ -88,14 +106,8 @@ function BigSphereObj({
         <Html>
           <div
             onClick={() => {
-              setChangeView({
-                ...DEFAULT_DATA,
-                [systemName]: {
-                  active: true,
-                  numObj: 0,
-                },
-              });
               setHostName(systemName);
+              setPlaOrSun(0);
             }}
             className="text-white text-lg select-none cursor-pointer"
           >
@@ -103,21 +115,21 @@ function BigSphereObj({
           </div>
         </Html>
       )}
-      <mesh position={position} rotation={[0, 0, 0]} ref={meshRef}>
+      <mesh position={[0, 0, 0]} rotation={[0, 0, 0]} ref={meshRef}>
         <pointLight
           position={[0, 0, 0]}
           angle={0.15}
           penumbra={1}
           decay={0}
-          intensity={Math.PI * 0.5}
+          intensity={Math.PI * 0.2 * scaleRatio}
         />
         <sphereGeometry
-          args={[SPACE_SIZE * ORBIT_TO_SUN * scaleRatio, 64, 64]}
+          args={[SPACE_SIZE * ORBIT_TO_SUN * SUN_RADIUS * scaleRatio, 64, 64]}
         />
         <meshStandardMaterial
           map={colorMap}
           emissive={emissiveColor}
-          emissiveIntensity={2}
+          emissiveIntensity={2 * scaleRatio}
           toneMapped={false}
         />
       </mesh>
@@ -126,12 +138,10 @@ function BigSphereObj({
 }
 
 function SmallSphereObj({
-  plaName = "Earth",
   colorMapLoc = "/texture/solar/earth/2k_earth_daymap.jpg",
   scaleRatio,
   planetRef,
-  changeViewPer,
-  setChangeView,
+  plaName = "Earth",
 }) {
   const meshRef1 = useRef();
   const [colorMap, displacementMap, normalMap] = useLoader(TextureLoader, [
@@ -186,8 +196,9 @@ function OrbitComponent({
   speedPla,
   scaleRatio,
   planetRef,
-  changeViewPer,
-  setChangeView,
+  hostName,
+  plaName,
+  systemName,
   zValue = 1,
 }) {
   const ellipseCurve = new THREE.EllipseCurve(
@@ -219,11 +230,10 @@ function OrbitComponent({
     >
       <mesh ref={boxRef} position={[0, 0, 0]}>
         <SmallSphereObj
-          planetRef={planetRef}
-          scaleRatio={scaleRatio}
           colorMapLoc={colorMapLoc}
-          changeViewPer={changeViewPer}
-          setChangeView={setChangeView}
+          scaleRatio={scaleRatio}
+          planetRef={planetRef}
+          plaName={plaName}
         />
       </mesh>
       <mesh>
@@ -239,86 +249,59 @@ function OrbitComponent({
   );
 }
 
-function AdjacentText({ systemName }) {
-  const textRef = useRef();
-  const textOffset = new THREE.Vector3(50, 30, -10); // Example offset to the right of the object
-
-  useFrame(({ camera }) => {
-    textRef.current.lookAt(camera.position);
-  });
-
-  return (
-    <Text
-      position={textOffset}
-      ref={textRef}
-      scale={[17, 17, 17]} // Adjust scale as needed
-      color="#cbcbcb"
-      anchorX="center"
-      anchorY="middle"
-      font="/fonts/fox_version_5_by_mickeyfan123_daxvfx5.ttf"
-    >
-      {systemName}
-    </Text>
-  );
-}
-
 function ThreeDComp({
-  changeViewPer,
-  setChangeView,
-  hostName,
+  plaOrSun,
   position,
   sunRef,
   planetRef,
   planetScale,
   sunScale,
+  hostName,
   systemName,
   setHostName,
+  setPlaOrSun,
   orbitRad,
+  plaName,
 }) {
-  const earthOrbit = DISTANCE_FROM_EARTH_TO_SUN;
-  const extractValue = changeViewPer[hostName].numObj;
-  const systemRef = useRef();
-
+  const earthOrbit = DISTANCE_FROM_EARTH_TO_SUN * orbitRad;
+  const extractValue = plaOrSun;
   return (
-    <group position={position} ref={systemRef}>
-      {hostName === systemName && (
-        <AdjacentText targetPositionRef={systemRef} systemName={systemName} />
-      )}
+    <group position={position}>
+      {hostName === systemName && <AdjacentText systemName={systemName} />}
       <BigSphereObj
-        sunRef={sunRef}
         scaleRatio={sunScale}
-        changeViewPer={changeViewPer}
-        position={[0, 0, 0]}
-        setChangeView={setChangeView}
+        sunRef={sunRef}
         hostName={hostName}
         systemName={systemName}
         setHostName={setHostName}
+        setPlaOrSun={setPlaOrSun}
       />
       <OrbitComponent
         xRadius={earthOrbit}
         yRadius={earthOrbit}
+        colorMapLoc={"/texture/solar/earth/2k_earth_daymap.jpg"}
+        speedPla={0.01}
         scaleRatio={
           extractValue === 0 ? planetScale * ORBIT_TO_SUN : planetScale
         }
-        colorMapLoc={"/texture/solar/earth/2k_earth_daymap.jpg"}
-        speedPla={0.01}
-        setChangeView={setChangeView}
-        changeViewPer={changeViewPer}
-        hostName={hostName}
         planetRef={planetRef}
+        hostName={hostName}
+        systemName={systemName}
+        plaName={plaName}
       />
     </group>
   );
 }
 
-function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
+function Wrapper3D({ plaOrSun, hostName, setHostName, setPlaOrSun }) {
   const controlsRef = useRef();
   const planetRef = useRef();
   const cameraRef = useRef();
   const sunRef = useRef();
   const distanceRef = useRef(1);
   const distanceRef1 = useRef(1);
-  const extractValue = changeView[hostName].numObj;
+  const extractValue = plaOrSun;
+  const listOfExo = Object.keys(DEFAULT_DATA).slice(0, LIMIT_VALUE);
   useThree(({ camera }) => {
     cameraRef.current = camera;
   });
@@ -383,7 +366,6 @@ function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
       controlsRef.current.update();
     }
   });
-  console.log(DEFAULT_DATA);
   return (
     <>
       <OrbitControls
@@ -405,142 +387,68 @@ function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
           factor={200}
           fade={true}
           speed={1}
-        /> */}
-      <ThreeDComp
-        setChangeView={setChangeView}
-        hostName={hostName}
-        systemName={"solar"}
-        planetRef={hostName === "solar" ? planetRef : null}
-        sunRef={hostName === "solar" ? sunRef : null}
-        changeViewPer={changeView}
-        controlsRef={controlsRef}
-        position={[0, 0, 0]}
-        setHostName={setHostName}
-        planetScale={1}
-        sunScale={109.2983}
-      />
-      <ThreeDComp
-        setChangeView={setChangeView}
-        systemName={"exopla1"}
-        hostName={hostName}
-        planetRef={hostName === "exopla1" ? planetRef : null}
-        sunRef={hostName === "exopla1" ? sunRef : null}
-        changeViewPer={changeView}
-        controlsRef={controlsRef}
-        position={[7000, 0, 7000]}
-        setHostName={setHostName}
-        planetScale={1}
-        sunScale={109.2983}
-      />
-      <ThreeDComp
-        setChangeView={setChangeView}
-        systemName={"exopla2"}
-        hostName={hostName}
-        planetRef={hostName === "exopla2" ? planetRef : null}
-        sunRef={hostName === "exopla2" ? sunRef : null}
-        changeViewPer={changeView}
-        controlsRef={controlsRef}
-        position={[4000, 0, 3000]}
-        setHostName={setHostName}
-        planetScale={1}
-        sunScale={109.2983}
-      />
-      <ThreeDComp
-        setChangeView={setChangeView}
-        hostName={hostName}
-        systemName={"exopla3"}
-        planetRef={hostName === "exopla3" ? planetRef : null}
-        sunRef={hostName === "exopla3" ? sunRef : null}
-        changeViewPer={changeView}
-        controlsRef={controlsRef}
-        position={[-4000, 0, -3000]}
-        setHostName={setHostName}
-        planetScale={1}
-        sunScale={109.2983}
-      />
+        />
+        */}
+      {listOfExo.map((ele, index) => (
+        <ThreeDComp
+          key={index}
+          plaOrSun={plaOrSun}
+          position={DEFAULT_DATA[ele].world_position}
+          sunRef={hostName === DEFAULT_DATA[ele].sun_name ? sunRef : null}
+          planetRef={hostName === DEFAULT_DATA[ele].sun_name ? planetRef : null}
+          planetScale={DEFAULT_DATA[ele].pl_size}
+          sunScale={DEFAULT_DATA[ele].sun_size}
+          hostName={hostName}
+          systemName={DEFAULT_DATA[ele].sun_name}
+          setHostName={setHostName}
+          setPlaOrSun={setPlaOrSun}
+          orbitRad={DEFAULT_DATA[ele].orbit_distance}
+          plaName={DEFAULT_DATA[ele].pl_name}
+        />
+      ))}
     </>
   );
 }
 
 export default function Home() {
-  const [changeView, setChangeView] = useState(DEFAULT_DATA);
-  const [hostName, setHostName] = useState("solar");
+  const [hostName, setHostName] = useState("Sun");
+  const [plaOrSun, setPlaOrSun] = useState(0);
+  const listOfExo = Object.keys(DEFAULT_DATA).slice(0, LIMIT_VALUE);
+  for (let i = 0; i < listOfExo.length; i++) {
+    console.log(DEFAULT_DATA[listOfExo[i]]);
+  }
   return (
     <main className="h-screen m-[unset] relative bg-slate-950">
-      <div className="z-50 fixed top-0 right-0 m-3 rounded-xl h-40 w-44 bg-red-700 p-4 text-white">
+      <div className="z-[9999] fixed top-0 right-0 m-3 rounded-xl h-auto w-44 bg-red-700 p-4 text-white">
         <div
           className="cursor-pointer font-bold"
-          onClick={() =>
-            setChangeView({
-              ...changeView,
-              [hostName]: {
-                ...changeView[hostName],
-                numObj: changeView[hostName].numObj === 0 ? 1 : 0,
-              },
-            })
-          }
+          onClick={() => setPlaOrSun(plaOrSun === 0 ? 1 : 0)}
         >
           Change The View
         </div>
         <div className="text-slate-200 flex-col flex">
-          <div
-            onClick={() => {
-              setChangeView({
-                ...DEFAULT_DATA,
-                solar: { active: true, numObj: 0 },
-              });
-              setHostName("solar");
-            }}
-            className="text-white cursor-pointer"
-          >
-            Solar
-          </div>
-          <div
-            onClick={() => {
-              setChangeView({
-                ...DEFAULT_DATA,
-                exopla1: { active: true, numObj: 0 },
-              });
-              setHostName("exopla1");
-            }}
-            className="text-white cursor-pointer"
-          >
-            ExoPla1
-          </div>
-          <div
-            onClick={() => {
-              setChangeView({
-                ...DEFAULT_DATA,
-                exopla2: { active: true, numObj: 0 },
-              });
-              setHostName("exopla2");
-            }}
-            className="text-white cursor-pointer"
-          >
-            ExoPla2
-          </div>
-          <div
-            onClick={() => {
-              setChangeView({
-                ...DEFAULT_DATA,
-                exopla3: { active: true, numObj: 0 },
-              });
-              setHostName("exopla3");
-            }}
-            className="text-white cursor-pointer"
-          >
-            ExoPla3
-          </div>
+          {listOfExo.map((ele, index) => (
+            <div
+              key={index}
+              onClick={() => {
+                setHostName(ele);
+                setPlaOrSun(0);
+              }}
+              className="text-white cursor-pointer"
+            >
+              {ele}
+            </div>
+          ))}
         </div>
       </div>
       <Canvas
         camera={{ position: [240, 120, 120], fov: 50, far: 100000, near: 1 }}
       >
         <Wrapper3D
-          changeView={changeView}
-          setChangeView={setChangeView}
           hostName={hostName}
           setHostName={setHostName}
+          plaOrSun={plaOrSun}
+          setPlaOrSun={setPlaOrSun}
         />
       </Canvas>
     </main>
