@@ -255,32 +255,6 @@ function OrbitComponent({
   );
 }
 
-<<<<<<< HEAD
-=======
-function AdjacentText({ targetPositionRef, systemName }) {
-  const textRef = useRef();
-  const textOffset = new THREE.Vector3(40, 20, -10); // Example offset to the right of the object
-
-  useFrame(({ camera }) => {
-    textRef.current.lookAt(camera.position);
-  });
-
-  return (
-    <Text
-      position={textOffset}
-      ref={textRef}
-      scale={[17, 17, 17]} // Adjust scale as needed
-      color="#cbcbcb"
-      anchorX="center"
-      anchorY="middle"
-      font="/fonts/fox_version_5_by_mickeyfan123_daxvfx5.ttf"
-    >
-      {systemName}
-    </Text>
-  );
-}
-
->>>>>>> 0a33ecf66b1edd972f59545e85c97ae82a63c950
 function ThreeDComp({
   plaOrSun,
   position,
