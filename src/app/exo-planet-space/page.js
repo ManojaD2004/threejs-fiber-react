@@ -23,6 +23,26 @@ extend({ UnrealBloomPass });
 
 const SPACE_SIZE = 3;
 const ORBIT_TO_SUN = 0.003;
+const DISTANCE_FROM_EARTH_TO_SUN = 23479.8304;
+
+const Default_Data = {
+  solar: {
+    active: true,
+    numObj: 0,
+  },
+  exopla1: {
+    active: false,
+    numObj: 0,
+  },
+  exopla2: {
+    active: false,
+    numObj: 0,
+  },
+  exopla3: {
+    active: false,
+    numObj: 0,
+  },
+};
 
 function BigSphereObj({
   position,
@@ -186,19 +206,56 @@ function OrbitComponent({
   );
 }
 
-function ThreeDComp({ changeViewPer, setChangeView }) {
+function ThreeDComp({
+  changeViewPer,
+  setChangeView,
+  hostName,
+  controlsRef,
+  position,
+  sunRef,
+  planetRef
+}) {
+  const earthOrbit = DISTANCE_FROM_EARTH_TO_SUN;
+  const extractValue = changeViewPer[hostName].numObj;
+
+  return (
+    <group position={position}>
+      <BigSphereObj
+        sunRef={sunRef}
+        scaleRatio={109.2983}
+        changeViewPer={changeViewPer}
+        position={[0, 0, 0]}
+        setChangeView={setChangeView}
+        hostName={hostName}
+      />
+      <OrbitComponent
+        xRadius={earthOrbit}
+        yRadius={earthOrbit}
+        scaleRatio={extractValue === 0 ? 1 * ORBIT_TO_SUN : 1}
+        colorMapLoc={"/texture/solar/earth/2k_earth_daymap.jpg"}
+        speedPla={0.01}
+        setChangeView={setChangeView}
+        changeViewPer={changeViewPer}
+        hostName={hostName}
+        planetRef={planetRef}
+      />
+    </group>
+  );
+}
+
+function Wrapper3D({ changeView, setChangeView, hostName }) {
+  const controlsRef = useRef();
   const planetRef = useRef();
   const cameraRef = useRef();
-  const controlsRef = useRef();
-  const stopRef = useRef(false);
   const sunRef = useRef();
   const distanceRef = useRef(1);
-  const earthOrbit = 23479.8304;
+  const distanceRef1 = useRef(1);
+  const extractValue = changeView[hostName].numObj;
   useThree(({ camera }) => {
     cameraRef.current = camera;
   });
   useEffect(() => {
-    if (changeViewPer === false && planetRef.current && cameraRef.current) {
+    if (extractValue === 1 && planetRef.current && cameraRef.current) {
       const target = new THREE.Vector3();
       const target1 = new THREE.Vector3();
       sunRef.current.getWorldPosition(target1);
@@ -209,7 +266,7 @@ function ThreeDComp({ changeViewPer, setChangeView }) {
       cameraRef.current.lookAt(target1);
       cameraRef.current.rotation.set(0, Math.PI / 2, 0);
     } else if (
-      changeViewPer === true &&
+      extractValue === 0 &&
       sunRef.current &&
       cameraRef.current &&
       controlsRef.current
@@ -222,44 +279,36 @@ function ThreeDComp({ changeViewPer, setChangeView }) {
       cameraRef.current.lookAt(target);
       cameraRef.current.rotation.set(0, -Math.PI / 2, 0);
     }
-  }, [changeViewPer]);
+  }, [extractValue, hostName]);
 
   useFrame((state, delta) => {
-    const target = controlsRef.current.target;
-    const distance = cameraRef.current.position.distanceTo(target);
-    if (controlsRef.current && cameraRef.current) {
+    if (controlsRef.current && cameraRef.current && sunRef.current) {
+      const target = controlsRef.current.target;
+      const distance = cameraRef.current.position.distanceTo(target);
+      const target1 = new THREE.Vector3();
+      sunRef.current.getWorldPosition(target1);
+      const distance1 = cameraRef.current.position.distanceTo(target1);
       distanceRef.current = distance;
-    }
-    if (changeViewPer === false && controlsRef.current && cameraRef.current) {
-      planetRef.current.scale.set(10 / distance, 10 / distance, 10 / distance);
+      distanceRef1.current = distance1;
+      if (extractValue === 1) {
+        planetRef.current.scale.set(
+          10 / distance,
+          10 / distance,
+          10 / distance
+        );
+      }
     }
     if (
-      changeViewPer === false &&
+      extractValue === 1 &&
       planetRef.current &&
       controlsRef.current &&
       cameraRef.current
     ) {
       const target = new THREE.Vector3();
       planetRef.current.getWorldPosition(target);
-      // if (stopRef.current === false) {
-      //   const cameraDistance = 10;
-      //   const cameraOffset = new THREE.Vector3(cameraDistance, 0, 0);
-      //   const target1 = new THREE.Vector3();
-      //   const final1 = target.clone().add(cameraOffset);
-      //   sunRef.current.getWorldPosition(target1);
-      //   cameraRef.current.position.lerp(final1, 0.05);
-      //   console.log(cameraRef.current);
-      //   cameraRef.current.lookAt(target1);
-      // }
-
       controlsRef.current.target.lerp(target, 0.1);
       controlsRef.current.update();
-      stopRef.current = false;
-    } else if (
-      changeViewPer === true &&
-      sunRef.current &&
-      controlsRef.current
-    ) {
+    } else if (extractValue === 0 && sunRef.current && controlsRef.current) {
       const target = new THREE.Vector3();
       sunRef.current.getWorldPosition(target);
       controlsRef.current.target.copy(target);
@@ -270,9 +319,6 @@ function ThreeDComp({ changeViewPer, setChangeView }) {
     <>
       <OrbitControls
         ref={controlsRef}
-        onChange={() => {
-          stopRef.current = true;
-        }}
         enablePan={false}
         zoomToCursor={true}
         zoomSpeed={5}
@@ -283,62 +329,115 @@ function ThreeDComp({ changeViewPer, setChangeView }) {
         <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
       </Effects>
       <BakeShadows />
-      <BigSphereObj
-        sunRef={sunRef}
-        scaleRatio={109.2983}
-        changeViewPer={changeViewPer}
+      <ThreeDComp
+        setChangeView={setChangeView}
+        hostName={hostName}
+        planetRef={hostName === "solar" && planetRef}
+        sunRef={hostName === "solar" && sunRef}
+        changeViewPer={changeView}
+        controlsRef={controlsRef}
         position={[0, 0, 0]}
-        setChangeView={setChangeView}
       />
-      <OrbitComponent
-        xRadius={earthOrbit}
-        yRadius={earthOrbit}
-        scaleRatio={changeViewPer === true ? 1 * ORBIT_TO_SUN : 1}
-        colorMapLoc={"/texture/solar/earth/2k_earth_daymap.jpg"}
-        speedPla={0.01}
+      <ThreeDComp
         setChangeView={setChangeView}
-        planetRef={planetRef}
-        changeViewPer={changeViewPer}
+        hostName={hostName}
+        planetRef={hostName === "exopla1" && planetRef}
+        sunRef={hostName === "exopla1" && sunRef}
+        changeViewPer={changeView}
+        controlsRef={controlsRef}
+        position={[0, 0, 0]}
       />
-      {/* <OrbitComponent
-        xRadius={earthOrbit}
-        yRadius={earthOrbit}
-        scaleRatio={changeViewPer === true ? 1 * ORBIT_TO_SUN : 1}
-        colorMapLoc={"/texture/solar/earth/2k_earth_daymap.jpg"}
-        speedPla={0.01}
-        setChangeView={setChangeView}
-        planetRef={planetRef}
-        changeViewPer={changeViewPer}
-        zValue={1.25}
-      /> */}
     </>
   );
 }
 
 export default function Home() {
-  const [changeView, setChangeView] = useState(true);
+  const [changeView, setChangeView] = useState(Default_Data);
+  const [hostName, setHostName] = useState("solar");
   return (
     <main className="h-screen m-[unset] relative bg-slate-950">
       <div className="z-50 fixed top-0 right-0 m-3 rounded-xl h-40 w-44 bg-red-700 p-4 text-white">
         <div
-          className="cursor-pointer"
-          onClick={() => setChangeView(!changeView)}
+          className="cursor-pointer font-bold"
+          onClick={() =>
+            setChangeView({
+              ...changeView,
+              [hostName]: {
+                ...changeView[hostName],
+                numObj: changeView[hostName].numObj === 0 ? 1 : 0,
+              },
+            })
+          }
         >
           Change The View
+        </div>
+        <div className="text-slate-200 flex-col flex">
+          <div
+            onClick={() => {
+              setChangeView({
+                ...Default_Data,
+                solar: { active: true, numObj: 0 },
+              });
+              setHostName("solar");
+            }}
+            className="text-white cursor-pointer"
+          >
+            Solar
+          </div>
+          <div
+            onClick={() => {
+              setChangeView({
+                ...Default_Data,
+                exopla1: { active: true, numObj: 0 },
+              });
+              setHostName("exopla1");
+            }}
+            className="text-white cursor-pointer"
+          >
+            ExoPla1
+          </div>
+          <div
+            onClick={() => {
+              setChangeView({
+                ...Default_Data,
+                exopla2: { active: true, numObj: 0 },
+              });
+              setHostName("exopla2");
+            }}
+            className="text-white cursor-pointer"
+          >
+            ExoPla2
+          </div>
+          <div
+            onClick={() => {
+              setChangeView({
+                ...Default_Data,
+                exopla3: { active: true, numObj: 0 },
+              });
+              setHostName("exopla3");
+            }}
+            className="text-white cursor-pointer"
+          >
+            ExoPla3
+          </div>
         </div>
       </div>
       <Canvas
         camera={{ position: [240, 120, 120], fov: 50, far: 100000, near: 1 }}
       >
-        <Stars
+        {/* <Stars
           radius={15000}
           count={15000}
           depth={6000}
           factor={200}
           fade={true}
           speed={1}
+        /> */}
+        <Wrapper3D
+          changeView={changeView}
+          setChangeView={setChangeView}
+          hostName={hostName}
         />
-        <ThreeDComp setChangeView={setChangeView} changeViewPer={changeView} />
       </Canvas>
     </main>
   );
