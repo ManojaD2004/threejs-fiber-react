@@ -20,30 +20,50 @@ import {
 import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import { UnrealBloomPass } from "three-stdlib";
+import resultJson from "@/data/result";
 extend({ UnrealBloomPass });
 
 const SPACE_SIZE = 3;
 const ORBIT_TO_SUN = 0.003;
 const DISTANCE_FROM_EARTH_TO_SUN = 23479.8304;
+const SUN_RADIUS = 109.2983;
+const EARTH_RADIUS = 1;
 
 const DEFAULT_DATA = {
   solar: {
-    active: false,
+    active: true,
     numObj: 0,
-  },
-  exopla1: {
-    active: false,
-    numObj: 0,
-  },
-  exopla2: {
-    active: false,
-    numObj: 0,
-  },
-  exopla3: {
-    active: false,
-    numObj: 0,
+    pl_name: "Earth",
+    sun_name: "Sun",
+    orbit_distance: 1,
+    pl_size: 1,
+    sun_size: 1,
+    world_position: [0, 0, 0],
   },
 };
+
+for (let i = 0; i < resultJson.length; i++) {
+  const exoSpace = resultJson[i];
+  const orbDis = exoSpace["Semi-Major Axis"].replace(" AU", "");
+  // % of distance from earth to sun same for below
+  const plSize = exoSpace["Planet Radius"].replace(" Earth radii", "");
+  const sunSize = exoSpace["Stellar Radius"].replace(" Solar radii", "");
+  const worldPosDis = exoSpace["Distance from Earth"].replace(" parsecs", "");
+  const distance = Number(worldPosDis) * 1000;
+  const theta = Math.random() * 2 * Math.PI;
+  const x = distance * Math.cos(theta);
+  const z = distance * Math.sin(theta);
+  const worldPosition = [x, 0, z];
+  DEFAULT_DATA[exoSpace["pl_name"]] = {
+    pl_name: exoSpace["pl_name"],
+    sun_name: exoSpace["hostname"],
+    orbit_distance: orbDis === "" ? 1 : Number(orbDis),
+    pl_size: plSize === "" ? 1 : Number(plSize),
+    sun_size: sunSize === "" ? 1 : Number(sunSize),
+    numObj: 0,
+    world_position: worldPosition,
+  };
+}
 
 function BigSphereObj({
   position,
@@ -219,7 +239,7 @@ function OrbitComponent({
   );
 }
 
-function AdjacentText({ targetPositionRef, systemName }) {
+function AdjacentText({ systemName }) {
   const textRef = useRef();
   const textOffset = new THREE.Vector3(50, 30, -10); // Example offset to the right of the object
 
@@ -250,8 +270,10 @@ function ThreeDComp({
   sunRef,
   planetRef,
   planetScale,
+  sunScale,
   systemName,
   setHostName,
+  orbitRad,
 }) {
   const earthOrbit = DISTANCE_FROM_EARTH_TO_SUN;
   const extractValue = changeViewPer[hostName].numObj;
@@ -264,7 +286,7 @@ function ThreeDComp({
       )}
       <BigSphereObj
         sunRef={sunRef}
-        scaleRatio={109.2983}
+        scaleRatio={sunScale}
         changeViewPer={changeViewPer}
         position={[0, 0, 0]}
         setChangeView={setChangeView}
@@ -275,7 +297,9 @@ function ThreeDComp({
       <OrbitComponent
         xRadius={earthOrbit}
         yRadius={earthOrbit}
-        scaleRatio={extractValue === 0 ? 1 * ORBIT_TO_SUN : 1}
+        scaleRatio={
+          extractValue === 0 ? planetScale * ORBIT_TO_SUN : planetScale
+        }
         colorMapLoc={"/texture/solar/earth/2k_earth_daymap.jpg"}
         speedPla={0.01}
         setChangeView={setChangeView}
@@ -359,6 +383,7 @@ function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
       controlsRef.current.update();
     }
   });
+  console.log(DEFAULT_DATA);
   return (
     <>
       <OrbitControls
@@ -373,6 +398,14 @@ function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
         <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
       </Effects>
       <BakeShadows />
+      {/* <Stars
+          radius={15000}
+          count={15000}
+          depth={6000}
+          factor={200}
+          fade={true}
+          speed={1}
+        /> */}
       <ThreeDComp
         setChangeView={setChangeView}
         hostName={hostName}
@@ -383,6 +416,8 @@ function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
         controlsRef={controlsRef}
         position={[0, 0, 0]}
         setHostName={setHostName}
+        planetScale={1}
+        sunScale={109.2983}
       />
       <ThreeDComp
         setChangeView={setChangeView}
@@ -394,6 +429,8 @@ function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
         controlsRef={controlsRef}
         position={[7000, 0, 7000]}
         setHostName={setHostName}
+        planetScale={1}
+        sunScale={109.2983}
       />
       <ThreeDComp
         setChangeView={setChangeView}
@@ -405,6 +442,8 @@ function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
         controlsRef={controlsRef}
         position={[4000, 0, 3000]}
         setHostName={setHostName}
+        planetScale={1}
+        sunScale={109.2983}
       />
       <ThreeDComp
         setChangeView={setChangeView}
@@ -416,6 +455,8 @@ function Wrapper3D({ changeView, setChangeView, hostName, setHostName }) {
         controlsRef={controlsRef}
         position={[-4000, 0, -3000]}
         setHostName={setHostName}
+        planetScale={1}
+        sunScale={109.2983}
       />
     </>
   );
@@ -495,14 +536,6 @@ export default function Home() {
       <Canvas
         camera={{ position: [240, 120, 120], fov: 50, far: 100000, near: 1 }}
       >
-        {/* <Stars
-          radius={15000}
-          count={15000}
-          depth={6000}
-          factor={200}
-          fade={true}
-          speed={1}
-        /> */}
         <Wrapper3D
           changeView={changeView}
           setChangeView={setChangeView}
