@@ -31,7 +31,7 @@ const SPACE_SIZE = 3;
 const ORBIT_TO_SUN = 0.003;
 const DISTANCE_FROM_EARTH_TO_SUN = 23479.8304;
 const SUN_RADIUS = 109.2983;
-const LIMIT_VALUE = 10;
+const LIMIT_VALUE = 20;
 
 const DEFAULT_DATA = {
   Sun: {
@@ -386,15 +386,15 @@ function Wrapper3D({ plaOrSun, hostName, setHostName, setPlaOrSun }) {
         <unrealBloomPass threshold={1} strength={1.0} radius={0.5} />
       </Effects>
       <BakeShadows />
-      {/* <Stars
-          radius={15000}
-          count={15000}
+      <Stars
+          radius={10000}
+          count={50000}
           depth={6000}
           factor={200}
           fade={true}
           speed={1}
         />
-        */}
+       
       {listOfExo.map((ele, index) => (
         <ThreeDComp
           key={index}
